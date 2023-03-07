@@ -1,7 +1,7 @@
 {
   "name": "chumi",
   "version": "0.0.10",
-  "repository": "git@github.com:Topthinking/chumi.git",
+  "repository": "git@github.com:chumijs/chumi.git",
   "author": "topthinking",
   "license": "MIT",
   "main": "./lib/chumi/index.js",
