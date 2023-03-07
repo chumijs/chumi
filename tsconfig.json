@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "module": "CommonJS",
+    "target": "es2015",
+    "lib": ["esnext", "dom"],
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "baseUrl": "chumi",
+    "outDir": "lib"
+  },
+  "files": ["server.d.ts"],
+  "include": ["chumi/**/*.ts"]
+}
