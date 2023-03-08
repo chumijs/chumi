@@ -10,3 +10,10 @@
 3. - [x] Service层注解
 4. - [x] Service引用Service，同时保证注入的ctx上下文是一致性的
 5. - [ ] 单元测试
+6. - [ ] 支持swagger
+
+## 调试
+
+```sh
+$ yarn tsx sample/server.ts
+```
