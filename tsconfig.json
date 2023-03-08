@@ -9,7 +9,12 @@
     "moduleResolution": "node",
     "esModuleInterop": true,
     "baseUrl": "chumi",
-    "outDir": "lib"
+    "rootDir": "chumi",
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "declarationDir": "./lib/types",
+    "tsBuildInfoFile": "./lib/.tsbuildinfo"
   },
   "files": ["server.d.ts"],
   "include": ["chumi/**/*.ts"]

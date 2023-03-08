@@ -15,7 +15,7 @@ export { default as Service } from './Service';
 /**
  * 基于koa的运行时中间件框架
  */
-export default (
+export const chumi = (
   controllers: Object[],
   options?: {
     /**
@@ -64,3 +64,5 @@ export default (
     }
   };
 };
+
+export default chumi;
