@@ -9,6 +9,7 @@ export const SymbolRouter = Symbol('chumiRouter');
 
 export const SymbolServiceName = Symbol('serviceName');
 export const SymbolService = Symbol('service');
+export const SymbolApiTags = Symbol('controller-api-tags');
 
 export type BaseDataType = StringConstructor | NumberConstructor;
 
@@ -24,3 +25,25 @@ export function loadService<T extends abstract new (...args: any) => any>(
 ): InstanceType<typeof value> {
   return value as any;
 }
+
+export type SwaggerOptions = Partial<{
+  swaggerPath: string;
+  title: string;
+  description: string;
+  version: string;
+  tags: { name: string; description: string }[];
+}>;
+
+export type RouteOptions = Partial<{
+  summary: string;
+}>;
+
+export interface routeRule {
+  method: string;
+  path: string;
+  parameterMap: parameterMap[];
+  routeOptions: RouteOptions;
+  tags: string[];
+}
+
+export type routeRules = routeRule[];

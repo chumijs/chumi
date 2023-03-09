@@ -3,7 +3,10 @@
  */
 import { Context, Next } from 'koa';
 import koaBody from 'koa-body';
+
 import ChumiRouter from './ChumiRouter';
+import { SwaggerOptions } from './constants';
+import Swagger from './Swagger';
 
 export { ALL, loadService } from './constants';
 export * from './Methods';
@@ -11,6 +14,7 @@ export * from './Parameters';
 
 export { default as Controller } from './Controller';
 export { default as Service } from './Service';
+export { default as ApiTags } from './ApiTags';
 
 /**
  * 基于koa的运行时中间件框架
@@ -38,10 +42,25 @@ export const chumi = (
      * 当chumi中间件业务完成时触发
      */
     onFinish?: (ctx: Context) => Promise<void> | void;
+    /**
+     * 开启swagger
+     *
+     * 默认访问 /swagger-ui/index.html
+     */
+    swagger?: SwaggerOptions;
   }
 ) => {
-  const chumi = new ChumiRouter(controllers).export;
+  const chumiRouter = new ChumiRouter(controllers);
+  const swaggerInstance = new Swagger(options.swagger, chumiRouter);
   return async (ctx: Context, next: Next) => {
+    if (options?.swagger) {
+      // 开启swagger
+      // eslint-disable-next-line no-new
+      if (await swaggerInstance.run(ctx)) {
+        return next();
+      }
+    }
+
     try {
       await options?.onStart?.(ctx);
       await new Promise<void>((resolve) => {
@@ -51,7 +70,7 @@ export const chumi = (
           resolve();
         }
       });
-      await chumi(ctx, next);
+      await chumiRouter.mount(ctx, next);
       await options?.onSuccess?.(ctx);
     } catch (error) {
       if (options?.onError) {

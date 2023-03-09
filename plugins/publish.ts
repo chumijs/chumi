@@ -32,16 +32,19 @@ export default function compressServerCode() {
           main: 'index.js',
           types: 'types/index.d.ts',
           dependencies: {
+            '@types/koa': '^2.13.5',
             koa: '^2.14.1',
             'koa-body': '^5.0.0',
             'koa-compose': '^4.1.0',
-            'koa-router': '^10.1.1'
+            'koa-router': '^10.1.1',
+            'swagger-ui-dist': '^4.18.0'
           },
           peerDependencies: {
             koa: '^2.14.1',
             'koa-body': '^5.0.0',
             'koa-compose': '^4.1.0',
-            'koa-router': '^10.1.1'
+            'koa-router': '^10.1.1',
+            'swagger-ui-dist': '^4.18.0'
           }
         })
       );
@@ -51,9 +54,29 @@ export default function compressServerCode() {
        */
       fs.writeFileSync(
         path.join(__dirname, '..', 'lib', 'readme.md'),
-        `# Chumi · [![NPM version](https://img.shields.io/npm/v/chumi.svg)](https://www.npmjs.com/package/chumi)  · [Document](https://ph9o1wkcdp.feishu.cn/docx/UGCfdJVisokyQLxi2Rocuy4fn7f)
+        `# Chumi · [![NPM version](https://img.shields.io/npm/v/chumi.svg)](https://www.npmjs.com/package/chumi)  · [DOCUMENTATION](https://juejin.cn/post/7208099384071192635)
 
-![image.png](https://s1.ax1x.com/2023/03/07/ppeFpUP.png)`
+![image.png](https://s1.ax1x.com/2023/03/07/ppeFpUP.png)
+
+## Apis
+
+\`\`\`ts
+import chumi, {
+  Controller,
+  Service,
+  Get,
+  Post,
+  Delete,
+  Put,
+  Param,
+  Query,
+  Body,
+  Header,
+  ApiTags,
+	loadService
+} from 'chumi';
+\`\`\`
+`
       );
 
       await new Promise((resolve) => {

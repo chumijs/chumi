@@ -10,7 +10,10 @@ import {
   ALL,
   SymbolService,
   SymbolServiceName,
-  SymbolRouter
+  SymbolRouter,
+  routeRule,
+  SymbolApiTags,
+  SymbolPut
 } from './constants';
 
 const handleParameter = (parameterMap: parameterMap[], ctx: Context) => {
@@ -51,11 +54,16 @@ export default (
   return (TargetControllerClass: any): any => {
     return function Ctr(
       router: InstanceType<typeof ChumiRouter>,
-      createPrefixRouter: (prefix: string) => InstanceType<typeof ChumiRouter>
+      createPrefixRouter: (prefix: string) => InstanceType<typeof ChumiRouter>,
+      storeRouteRule: (rule: routeRule) => void
     ) {
       // 解决传入的不是当前chumi实例化的问题
       // 即：使用chumi定义的控制器实例，必须通过chumi进行实例化才生效，否则将不做任何处理
-      if (router[SymbolRouter] !== SymbolRouter || typeof createPrefixRouter !== 'function') {
+      if (
+        router[SymbolRouter] !== SymbolRouter ||
+        typeof createPrefixRouter !== 'function' ||
+        typeof storeRouteRule !== 'function'
+      ) {
         return;
       }
 
@@ -77,27 +85,59 @@ export default (
        * routePath: 请求路由
        */
       const routerMethodMap = {
-        [SymbolGet]: currentRouter.get.bind(currentRouter),
-        [SymbolPost]: currentRouter.post.bind(currentRouter),
-        [SymbolDelete]: currentRouter.delete.bind(currentRouter)
+        [SymbolGet]: {
+          method: 'GET',
+          fn: currentRouter.get.bind(currentRouter)
+        },
+        [SymbolPost]: {
+          method: 'POST',
+          fn: currentRouter.post.bind(currentRouter)
+        },
+        [SymbolDelete]: {
+          method: 'Delete',
+          fn: currentRouter.delete.bind(currentRouter)
+        },
+        [SymbolPut]: {
+          method: 'Put',
+          fn: currentRouter.put.bind(currentRouter)
+        }
       };
 
       allProperties.forEach((actionName) => {
         if (actionName !== 'constructor') {
           const action = targetControllerInstance[actionName];
-          routerMethodMap[action.routeMethod]?.(action.routePath, async (ctx: Context) => {
+          if (!action) {
+            return;
+          }
+          const { method, fn } = routerMethodMap[action.routeMethod];
+
+          /**
+           * 处理配置，交给swagger
+           */
+
+          let parameterMap: parameterMap[] = null;
+          if (
+            targetControllerInstance[SymbolParameter] &&
+            targetControllerInstance[SymbolParameter][actionName]
+          ) {
+            parameterMap = targetControllerInstance[SymbolParameter][actionName];
+          }
+
+          storeRouteRule({
+            method,
+            path: action.routePath,
+            parameterMap,
+            routeOptions: action.routeOptions,
+            tags: Ctr[SymbolApiTags] ?? []
+          });
+
+          fn?.(action.routePath, async (ctx: Context) => {
             let parameters = [];
             /**
              * 处理参数
              */
-            if (
-              targetControllerInstance[SymbolParameter] &&
-              targetControllerInstance[SymbolParameter][actionName]
-            ) {
-              parameters = handleParameter(
-                targetControllerInstance[SymbolParameter][actionName],
-                ctx
-              );
+            if (parameterMap) {
+              parameters = handleParameter(parameterMap, ctx);
             }
 
             const that = Object.assign(targetControllerInstance, { ctx });
@@ -108,7 +148,7 @@ export default (
             const handler = {
               get: function (target, property) {
                 // 当发现需要调用到service实例时，从缓存中取出实例
-                if (that[property][SymbolServiceName] === SymbolService) {
+                if (that[property]?.[SymbolServiceName] === SymbolService) {
                   if (cacheServiceInstances[property]) {
                     return cacheServiceInstances[property];
                   }
