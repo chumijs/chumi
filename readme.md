@@ -33,6 +33,6 @@ import chumi, {
   Body,
   Header,
   ApiTags,
-	loadService
+  loadService
 } from 'chumi';
 ```
