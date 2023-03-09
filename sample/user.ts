@@ -1,22 +1,22 @@
-import { ApiTags, Controller, Delete, Get, loadService, Param, Query } from '../chumi';
+import { ApiTags, Controller, Delete, Get, loadService, Param, Post, Put, Query } from '../chumi';
 import { Context } from 'koa';
 import service from './service';
 
-@ApiTags(['测试首页'])
+@ApiTags(['测试用户'])
 @Controller()
 export default class {
   ctx: Context;
 
   service = loadService(service);
 
-  @Get('/api/test/:id', { summary: '基础测试' })
+  @Post('/api/test/:id', { summary: '基础测试1' })
   async getTest(@Query('name') name: string, @Param.number('id') id: number) {
     return (
       `name: ${name} ` + `method: ${this.ctx.method} ` + `path: ${await this.service.getPath()}`
     );
   }
 
-  @Delete('/api/test/:id', { summary: '基础测试' })
+  @Put('/api/test/:id', { summary: '基础测试2' })
   async getTest1(@Query('name') name: string, @Param.number('id') id: number) {
     return (
       `name: ${name} ` + `method: ${this.ctx.method} ` + `path: ${await this.service.getPath()}`
