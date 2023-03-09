@@ -2,7 +2,7 @@
 
 **基于koa的运行时的注解业务框架的中间件 · [文档](https://ph9o1wkcdp.feishu.cn/docx/UGCfdJVisokyQLxi2Rocuy4fn7f)**
 
-![image.png](https://s1.ax1x.com/2023/03/07/ppeFpUP.png)
+![image.png](https://s1.ax1x.com/2023/03/09/ppnJJeA.png)
 
 ## 功能
 1. - [x] 解决运行时丢失TypeScript类型标注的问题，这很关键，否则所谓的类型注解将没有任何意义
