@@ -94,7 +94,7 @@ export default class Swagger {
 
         const methodOptions: any = { parameters, tags: item.tags };
 
-        if (item.routeOptions.summary) {
+        if (item.routeOptions?.summary) {
           methodOptions.summary = item.routeOptions.summary;
         }
 
