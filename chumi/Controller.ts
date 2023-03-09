@@ -109,7 +109,12 @@ export default (
           if (!action) {
             return;
           }
-          const { method, fn } = routerMethodMap[action.routeMethod];
+          const routerMethodInfo = routerMethodMap[action.routeMethod];
+          if (!routerMethodInfo) {
+            return;
+          }
+
+          const { method, fn } = routerMethodInfo;
 
           /**
            * 处理配置，交给swagger
@@ -125,7 +130,7 @@ export default (
 
           storeRouteRule({
             method,
-            path: action.routePath,
+            path: prefix + action.routePath,
             parameterMap,
             routeOptions: action.routeOptions,
             tags: Ctr[SymbolApiTags] ?? []
