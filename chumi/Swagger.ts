@@ -25,6 +25,7 @@ export default class Swagger {
   private swaggerUiAssetPath: string;
   private options: SwaggerOptions;
   private chumiRouter: InstanceType<typeof ChumiRouter>;
+  private swaggerJSON: any = null;
 
   constructor(options: SwaggerOptions, chumiRouter: InstanceType<typeof ChumiRouter>) {
     if (options) {
@@ -48,6 +49,11 @@ export default class Swagger {
     const arr = pathname.split('/');
     let lastName = arr.pop();
     if (lastName === 'index.json') {
+      if (this.swaggerJSON) {
+        ctx.body = this.swaggerJSON;
+        return true;
+      }
+
       /**
        * 整理swagger json
        */
@@ -62,7 +68,7 @@ export default class Swagger {
       routeRules.forEach((item) => {
         const { path, method, parameterMap } = item;
         const parameters = [];
-        parameterMap.forEach((parameter) => {
+        parameterMap?.forEach((parameter) => {
           const swaggerParameter: any = {
             name: parameter.property,
             in: parametersInMap[parameter.type]
@@ -104,7 +110,7 @@ export default class Swagger {
         paths[swaggerPath][method.toLocaleLowerCase()] = methodOptions;
       });
 
-      ctx.body = {
+      const result = {
         openapi: '3.0.1',
         info: {
           title: this.options.title,
@@ -115,6 +121,10 @@ export default class Swagger {
         tags: Object.values(tags),
         paths
       };
+
+      this.swaggerJSON = result;
+
+      ctx.body = result;
       return true;
     }
     if (!lastName) {
