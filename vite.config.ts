@@ -16,8 +16,7 @@ export default defineConfig({
     },
     rollupOptions: {
       external: ['koa', 'koa-router', 'koa-body', 'koa-compose', 'swagger-ui-dist', 'fs', 'path']
-    },
-    minify: false
+    }
   },
   plugins: [publish()]
 });
