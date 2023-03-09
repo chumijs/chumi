@@ -130,7 +130,7 @@ export default (
 
           storeRouteRule({
             method,
-            path: prefix + action.routePath,
+            path: (prefix || '') + action.routePath,
             parameterMap,
             routeOptions: action.routeOptions,
             tags: Ctr[SymbolApiTags] ?? []
