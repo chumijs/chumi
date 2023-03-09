@@ -27,10 +27,12 @@ export default class Swagger {
   private chumiRouter: InstanceType<typeof ChumiRouter>;
 
   constructor(options: SwaggerOptions, chumiRouter: InstanceType<typeof ChumiRouter>) {
-    this.swaggerUiAssetPath = getAbsoluteFSPath();
-    this.options = Object.assign(defaultOptions, options);
-    this.chumiRouter = chumiRouter;
-    console.log(`[swagger-ui] http://localhost:{port}${this.options.swaggerPath}/index.html`);
+    if (options) {
+      this.swaggerUiAssetPath = getAbsoluteFSPath();
+      this.options = Object.assign(defaultOptions, options);
+      this.chumiRouter = chumiRouter;
+      console.log(`[swagger-ui] http://localhost:{port}${this.options.swaggerPath}/index.html`);
+    }
   }
 
   replaceInfo(content: string) {
