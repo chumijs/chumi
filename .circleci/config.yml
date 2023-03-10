@@ -40,3 +40,9 @@ jobs:
 
 workflows:
   version: 2
+
+  stable:
+    jobs:
+      - build:
+          filters:
+            branches:
