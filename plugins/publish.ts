@@ -10,14 +10,34 @@ export default function compressServerCode() {
     enforce: 'post',
     async closeBundle() {
       await new Promise((resolve) => {
-        const run = spawn(path.join(__dirname, '..', 'node_modules/.bin/tsc'), {
-          cwd: path.join(__dirname, '..'),
-          stdio: 'inherit'
-        });
+        const run = spawn(
+          path.join(__dirname, '..', 'node_modules/.bin/tsc'),
+          [
+            '--baseUrl',
+            'chumi',
+            '--tsBuildInfoFile',
+            './lib/.tsbuildinfo',
+            '--declarationDir',
+            './lib/types'
+          ],
+          {
+            cwd: path.join(__dirname, '..'),
+            stdio: 'inherit'
+          }
+        );
         run.on('close', resolve);
       });
 
       fs.removeSync(path.join(__dirname, '..', 'lib', '.tsbuildinfo'));
+      fs.moveSync(
+        path.join(__dirname, '..', 'lib', 'types/chumi'),
+        path.join(__dirname, '..', 'lib/chumi')
+      );
+      fs.removeSync(path.join(__dirname, '..', 'lib', 'types'));
+      fs.renameSync(
+        path.join(__dirname, '..', 'lib/chumi'),
+        path.join(__dirname, '..', 'lib/types')
+      );
 
       const version = require(path.join(__dirname, '..', 'package.json')).version;
 
@@ -54,7 +74,11 @@ export default function compressServerCode() {
        */
       fs.writeFileSync(
         path.join(__dirname, '..', 'lib', 'readme.md'),
-        `# Chumi · [![NPM version](https://img.shields.io/npm/v/chumi.svg)](https://www.npmjs.com/package/chumi)  · [DOCUMENTATION](https://juejin.cn/post/7208099384071192635)
+        `# Chumi · [![NPM version](https://img.shields.io/npm/v/chumi.svg)](https://www.npmjs.com/package/chumi) [![build](https://img.shields.io/circleci/build/github/chumijs/chumi/master.svg)](https://circleci.com/gh/chumijs/chumi) [![coverage](https://img.shields.io/codecov/c/github/chumijs/chumi/master.svg)](https://app.codecov.io/gh/chumijs/chumi/tree/master) · [DOCUMENTATION](https://juejin.cn/post/7208099384071192635)
+
+> **基于koa，在运行时，提供Controller、Route、Parameter、Service等功能注解的中间件框架**
+>
+> **可以在任何支持koa中间件的项目或者框架里面使用**
 
 ![image.png](https://s1.ax1x.com/2023/03/09/ppnJJeA.png)
 
@@ -73,7 +97,7 @@ import chumi, {
   Body,
   Header,
   ApiTags,
-	loadService
+  loadService
 } from 'chumi';
 \`\`\`
 `
