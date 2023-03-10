@@ -39,13 +39,6 @@ export default class ChumiRouter<T> {
       // eslint-disable-next-line no-new
       new Controller(router, this.prefix.bind(this), this.storeRouteRule.bind(this));
     });
-
-    /**
-     * 没有匹配到，处理404请求
-     */
-    router.all('', async (ctx) => {
-      ctx.status = 404;
-    });
   }
 
   private storeRouteRule(routeRule: routeRule) {

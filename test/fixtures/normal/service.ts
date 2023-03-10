@@ -8,8 +8,12 @@ export default class {
 
   common = loadService(commonService);
 
+  async getMethod() {
+    return await this.common.getMethod();
+  }
+
   async getPath() {
-    const method = await this.common.getMethod();
+    const method = await this.getMethod();
     return this.ctx.path + ' ' + (await this.common.getMethod()) + method;
   }
 }

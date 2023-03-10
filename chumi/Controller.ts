@@ -136,7 +136,7 @@ export default (
             tags: Ctr[SymbolApiTags] ?? []
           });
 
-          fn?.(action.routePath, async (ctx: Context) => {
+          fn(action.routePath, async (ctx: Context) => {
             let parameters = [];
             /**
              * 处理参数
