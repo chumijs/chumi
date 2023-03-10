@@ -37,6 +37,3 @@ jobs:
       - run:
           name: report coverage stats
           command: ./node_modules/.bin/codecov --token=$CI_CODECOV_TOKEN
-
-workflows:
-  version: 2
