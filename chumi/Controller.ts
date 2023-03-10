@@ -60,7 +60,7 @@ export default (
       // 解决传入的不是当前chumi实例化的问题
       // 即：使用chumi定义的控制器实例，必须通过chumi进行实例化才生效，否则将不做任何处理
       if (
-        router[SymbolRouter] !== SymbolRouter ||
+        router?.[SymbolRouter] !== SymbolRouter ||
         typeof createPrefixRouter !== 'function' ||
         typeof storeRouteRule !== 'function'
       ) {
@@ -106,9 +106,6 @@ export default (
       allProperties.forEach((actionName) => {
         if (actionName !== 'constructor') {
           const action = targetControllerInstance[actionName];
-          if (!action) {
-            return;
-          }
           const routerMethodInfo = routerMethodMap[action.routeMethod];
           if (!routerMethodInfo) {
             return;

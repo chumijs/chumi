@@ -30,11 +30,7 @@ export default (TargetServiceClass: any): any => {
               typeof targetServiceInstance[property] === 'function' &&
               targetServiceInstance[property][SymbolServiceName] === SymbolService
             ) {
-              // 当发现需要调用到service实例时，从缓存中取出实例
-              if (cacheServiceInstances[property]) {
-                return cacheServiceInstances[property];
-              }
-              // 第一次，需要实例化，动态注入当前的ctx
+              // 每次上下文都需要实例化，动态注入当前的ctx，当前上下文执行重复时，将不需要实例化了
               const serviceInstance = new targetServiceInstance[property](ctx);
               cacheServiceInstances[property] = serviceInstance;
               return serviceInstance;

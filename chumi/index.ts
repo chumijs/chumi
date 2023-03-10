@@ -73,6 +73,7 @@ export const chumi = (
       await chumiRouter.mount(ctx, next);
       await options?.onSuccess?.(ctx);
     } catch (error) {
+      ctx.status = 500;
       if (options?.onError) {
         options.onError(ctx, error);
       } else {

@@ -139,6 +139,19 @@ describe('Normal test', () => {
       });
   });
 
+  test('test-home-list', (done) => {
+    request
+      .get('/home/list')
+      .expect(200)
+      .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
+        expect(res.text).toMatch('');
+        return done();
+      });
+  });
+
   test('test-home-error', (done) => {
     request
       .get('/home/error')

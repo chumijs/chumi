@@ -14,6 +14,8 @@ export default class {
 
   async getPath() {
     const method = await this.getMethod();
+    await this.common.getMethod();
+    await this.common.getMethod();
     return this.ctx.path + ' ' + (await this.common.getMethod()) + method;
   }
 }
