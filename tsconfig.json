@@ -8,14 +8,10 @@
     "experimentalDecorators": true,
     "moduleResolution": "node",
     "esModuleInterop": true,
-    "baseUrl": "chumi",
-    "rootDir": "chumi",
     "noEmit": false,
     "declaration": true,
-    "emitDeclarationOnly": true,
-    "declarationDir": "./lib/types",
-    "tsBuildInfoFile": "./lib/.tsbuildinfo"
+    "emitDeclarationOnly": true
   },
   "files": ["server.d.ts"],
-  "include": ["chumi/**/*.ts"]
+  "include": ["chumi/**/*.ts", "test/**/*.ts"]
 }

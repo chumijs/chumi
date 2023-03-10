@@ -51,7 +51,7 @@ export const chumi = (
   }
 ) => {
   const chumiRouter = new ChumiRouter(controllers);
-  const swaggerInstance = new Swagger(options.swagger, chumiRouter);
+  const swaggerInstance = new Swagger(options?.swagger, chumiRouter);
   return async (ctx: Context, next: Next) => {
     if (options?.swagger) {
       // 开启swagger
