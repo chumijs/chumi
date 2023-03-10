@@ -15,7 +15,7 @@ aliases:
   - &run_yarn
     run:
       name: Install Packages
-      command: yarn start
+      command: yarn
 
 jobs:
   build:
