@@ -12,10 +12,11 @@ describe('Simple test', () => {
 
   afterAll(() => {
     server.close();
+    server = null;
+    request = null;
   });
 
-  test('abc', () => {
-    request.get('/').expect(200);
-    // expect(1 + 2).toBe(3);
+  test('test', () => {
+    return request.get('/').expect(200);
   });
 });
