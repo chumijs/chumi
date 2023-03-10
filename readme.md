@@ -4,6 +4,8 @@
 
 ![image.png](https://s1.ax1x.com/2023/03/09/ppnJJeA.png)
 
+**核心代码目录：** `chumi/`
+
 ## 功能
 1. - [x] 解决运行时丢失TypeScript类型标注的问题，这很关键，否则所谓的类型注解将没有任何意义
 2. - [x] Controller层注解
@@ -17,6 +19,12 @@
 
 ```sh
 $ yarn tsx sample/server.ts
+```
+
+## 测试
+
+```sh
+$ yarn test
 ```
 
 ## Apis
