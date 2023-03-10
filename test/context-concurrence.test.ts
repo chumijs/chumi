@@ -1,8 +1,6 @@
 /**
  * 测试上下文一致
  */
-
-import { Server } from 'http';
 import supertest from 'supertest';
 import Koa, { Context } from 'koa';
 import chumi, { Controller, Get, loadService, Service } from '../chumi';
@@ -42,14 +40,14 @@ class Service2 {
   }
 }
 
-describe('Consistency of context', () => {
+describe('Context Concurrence', () => {
   test('ctr->service->service', async () => {
     const app = new Koa();
     app.use(chumi([Sample]));
     const server = app.listen();
     const request = supertest(server);
     const result = await Promise.all(
-      [1, 2, 3, 4].map((item) => {
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((item) => {
         return new Promise<{ res: supertest.Response; id: number }>(async (resolve) => {
           const res = await request.get(`/test/${item}`).expect(200);
           resolve({ res, id: item });
