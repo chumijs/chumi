@@ -20,11 +20,13 @@ describe('Normal test', () => {
     const name = Math.random();
     return request
       .post('/api/user')
-      .send({ name })
+      .send({ name, id: 100 })
       .set('Accept', 'application/json')
       .expect(200)
       .then((response) => {
         expect(response.body.name).toBe(name);
+        expect(response.body.id1).toBe(100);
+        expect(response.body.id2).toBe('100');
       });
   });
 
@@ -35,30 +37,56 @@ describe('Normal test', () => {
       .expect(200)
       .then((response) => {
         expect(response.body.id).toBe(100);
+        expect(response.body.id2).toBe('100');
       });
   });
 
   test('test-put', async () => {
     const name = Math.random();
     return request
-      .put('/api/user?name=' + name)
+      .put('/api/user?name=' + name + '&id=100')
       .set('Accept', 'application/json')
       .expect(200)
       .then((response) => {
         expect(response.body.name).toBe(String(name));
+        expect(response.body.id1).toBe('100');
+        expect(response.body.id2).toBe(100);
       });
   });
 
   test('test-service', (done) => {
     request
       .get('/api/path')
+      .set('abc', 'abc')
       .expect(200)
       .end((err, res) => {
         if (err) {
           return done(err);
         }
-        expect(res.text).toBe('/api/path');
+        expect(res.text).toBe('/api/path GETGET abc /api/path GETGET');
         return done();
+      });
+  });
+
+  test('test-swagger-ui', (done) => {
+    request
+      .get('/swagger-ui/index.html')
+      .expect(200)
+      .end((err, res) => {
+        if (err) {
+          return done(err);
+        }
+        expect(res.text).toMatch('swagger-ui-bundle.js');
+        return done();
+      });
+  });
+
+  test('test-swagger-json', async () => {
+    return request
+      .get('/swagger-ui/index.json')
+      .expect(200)
+      .then((response) => {
+        expect(response.body.tags[0].name).toBe('首页');
       });
   });
 });

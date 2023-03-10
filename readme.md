@@ -9,7 +9,7 @@
 2. - [x] Controller层注解
 3. - [x] Service层注解
 4. - [x] Service引用Service，同时保证注入的ctx上下文是一致性的
-5. - [ ] 单元测试
+5. - [x] 单元测试
 6. - [x] 支持swagger
 7. - [ ] serverless
 

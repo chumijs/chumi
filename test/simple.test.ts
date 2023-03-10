@@ -19,4 +19,8 @@ describe('Simple test', () => {
   test('test', () => {
     return request.get('/').expect(200);
   });
+
+  test('test-404', () => {
+    return request.get('/404').expect(404);
+  });
 });

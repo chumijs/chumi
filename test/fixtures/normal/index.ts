@@ -13,7 +13,8 @@ app.use(
       formidable: {
         maxFileSize: 20000 * 1024 * 1024 * 10 // 设置上传文件大小最大限制，默认200M
       }
-    }
+    },
+    swagger: {}
   })
 );
 
