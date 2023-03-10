@@ -1,10 +1,14 @@
-# Chumi · [![NPM version](https://img.shields.io/npm/v/chumi.svg)](https://www.npmjs.com/package/chumi) [![build](https://img.shields.io/circleci/build/github/chumijs/chumi/master.svg)](https://circleci.com/gh/chumijs/chumi) [![coverage](https://img.shields.io/codecov/c/github/chumijs/chumi/master.svg)](https://app.codecov.io/gh/chumijs/chumi/tree/master)
+# Chumi · [![NPM version](https://img.shields.io/npm/v/chumi.svg)](https://www.npmjs.com/package/chumi) [![build](https://img.shields.io/circleci/build/github/chumijs/chumi/master.svg)](https://circleci.com/gh/chumijs/chumi) [![coverage](https://img.shields.io/codecov/c/github/chumijs/chumi/master.svg)](https://app.codecov.io/gh/chumijs/chumi/tree/master) · [DOCUMENTATION](https://juejin.cn/post/7208099384071192635)
 
-**基于koa的运行时的注解业务框架的中间件 · [文档](https://ph9o1wkcdp.feishu.cn/docx/UGCfdJVisokyQLxi2Rocuy4fn7f)**
+> **基于koa，在运行时，提供Controller、Route、Parameter、Service等功能注解的中间件框架**
+>
+> **可以在任何支持koa中间件的项目或者框架里面使用**
+>
+> **核心代码目录：** [`chumi/`](./chumi/)
 
 ![image.png](https://s1.ax1x.com/2023/03/09/ppnJJeA.png)
 
-**核心代码目录：** `chumi/`
+
 
 ## 功能
 1. - [x] 解决运行时丢失TypeScript类型标注的问题，这很关键，否则所谓的类型注解将没有任何意义
