@@ -47,3 +47,8 @@ export interface routeRule {
 }
 
 export type routeRules = routeRule[];
+
+export interface ChumiControllerOptions {
+  prefix?: string;
+  data?: Record<string | number, any>;
+}

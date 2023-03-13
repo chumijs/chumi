@@ -2,5 +2,8 @@
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true
+  },
+  "code-runner.executorMapByGlob": {
+    "*.test.ts": "yarn jest --forceExit"
   }
 }

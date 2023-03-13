@@ -6,14 +6,6 @@ import { getAbsoluteFSPath } from 'swagger-ui-dist';
 import { parameterMap, SwaggerOptions } from './constants';
 import ChumiRouter from './ChumiRouter';
 
-const defaultOptions: SwaggerOptions = {
-  swaggerPath: '/swagger-ui',
-  title: 'My Project',
-  description: 'This is a swagger-ui for chumi',
-  version: '1.0.0',
-  tags: []
-};
-
 const parametersInMap: { [key in parameterMap['type']]: string } = {
   param: 'path',
   header: 'header',
@@ -27,10 +19,19 @@ export default class Swagger {
   private chumiRouter: InstanceType<typeof ChumiRouter>;
   private swaggerJSON: any = null;
 
+  // 保证是在同一个实例里面，支持多实例场景
+  private defaultOptions: SwaggerOptions = {
+    swaggerPath: '/swagger-ui',
+    title: 'My Project',
+    description: 'This is a swagger-ui for chumi',
+    version: '1.0.0',
+    tags: []
+  };
+
   constructor(options: SwaggerOptions, chumiRouter: InstanceType<typeof ChumiRouter>) {
     if (options) {
       this.swaggerUiAssetPath = getAbsoluteFSPath();
-      this.options = Object.assign(defaultOptions, options);
+      this.options = Object.assign(this.defaultOptions, options);
       this.chumiRouter = chumiRouter;
       console.log(`[swagger-ui] http://localhost:{port}${this.options.swaggerPath}/index.html`);
     }
