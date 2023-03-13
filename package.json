@@ -8,7 +8,7 @@
     "build": "vite build",
     "lint": "eslint chumi --fix --ext .ts,.tsx,.vue,.js,.jsx",
     "format": "prettier --write .",
-    "test": "jest --coverage --collectCoverageFrom='[\"./chumi/**\"]'",
+    "test": "jest --coverage --collectCoverageFrom='[\"./chumi/**\"]' --silent",
     "pub": "yarn build --force --minify"
   },
   "dependencies": {
