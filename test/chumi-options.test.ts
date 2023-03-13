@@ -110,7 +110,7 @@ describe('Chumi Options', () => {
     server.close();
   });
 
-  test('test data', async () => {
+  test('test no data', async () => {
     const app = new Koa();
     app.use(chumi([Sample3], { prefix: '/api' }));
     const server = app.listen();
