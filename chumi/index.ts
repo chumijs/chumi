@@ -16,42 +16,60 @@ export { default as Controller } from './Controller';
 export { default as Service } from './Service';
 export { default as ApiTags } from './ApiTags';
 
+export interface ChumiOptions {
+  /**
+   * 如果项目之前已经使用了koa-body，或者类似的处理函数，这个参数就不需要传了
+   */
+  koaBody?: koaBody.IKoaBodyOptions;
+  /**
+   * 当chumi中间件开始时触发
+   */
+  onStart?: (ctx: Context) => Promise<void> | void;
+  /**
+   * 当chumi中间件业务发生错误时触发
+   */
+  onError?: (ctx: Context, error: Error) => Promise<void> | void;
+  /**
+   * 当chumi中间件业务成功时触发
+   */
+  onSuccess?: (ctx: Context) => Promise<void> | void;
+  /**
+   * 当chumi中间件业务完成时触发
+   */
+  onFinish?: (ctx: Context) => Promise<void> | void;
+  /**
+   * 开启swagger
+   *
+   * 默认访问 /swagger-ui/index.html
+   */
+  swagger?: SwaggerOptions;
+  /**
+   * 当前chumi下所有路由地址的统一前缀
+   */
+  prefix?: string;
+  /**
+   * 支持传数据到控制器里面
+   *
+   * 在控制器可以使用，ctx.chumi 获取到当前传的数据
+   */
+  data?: Record<string | number, any>;
+}
+
 /**
  * 基于koa的运行时中间件框架
  */
-export const chumi = (
-  controllers: Object[],
-  options?: {
-    /**
-     * 如果项目之前已经使用了koa-body，或者类似的处理函数，这个参数就不需要传了
-     */
-    koaBody?: koaBody.IKoaBodyOptions;
-    /**
-     * 当chumi中间件开始时触发
-     */
-    onStart?: (ctx: Context) => Promise<void> | void;
-    /**
-     * 当chumi中间件业务发生错误时触发
-     */
-    onError?: (ctx: Context, error: Error) => Promise<void> | void;
-    /**
-     * 当chumi中间件业务成功时触发
-     */
-    onSuccess?: (ctx: Context) => Promise<void> | void;
-    /**
-     * 当chumi中间件业务完成时触发
-     */
-    onFinish?: (ctx: Context) => Promise<void> | void;
-    /**
-     * 开启swagger
-     *
-     * 默认访问 /swagger-ui/index.html
-     */
-    swagger?: SwaggerOptions;
-  }
-) => {
-  const chumiRouter = new ChumiRouter(controllers);
-  const swaggerInstance = new Swagger(options?.swagger, chumiRouter);
+export const chumi = (controllers: Object[], options?: ChumiOptions) => {
+  const chumiRouter = new ChumiRouter(controllers, {
+    prefix: options?.prefix,
+    data: options?.data
+  });
+  const swaggerInstance = new Swagger(
+    {
+      ...(options?.prefix ? { swaggerPath: options.prefix + '/swagger-ui' } : {}),
+      ...(options?.swagger ?? {})
+    },
+    chumiRouter
+  );
   return async (ctx: Context, next: Next) => {
     if (options?.swagger) {
       // 开启swagger

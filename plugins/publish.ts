@@ -103,13 +103,15 @@ import chumi, {
 `
       );
 
-      await new Promise((resolve) => {
-        const run = spawn('npm', ['publish', '--registry', 'https://registry.npmjs.org'], {
-          cwd: path.join(__dirname, '..', 'lib'),
-          stdio: 'inherit'
+      if (process.argv[3] === '--force') {
+        await new Promise((resolve) => {
+          const run = spawn('npm', ['publish', '--registry', 'https://registry.npmjs.org'], {
+            cwd: path.join(__dirname, '..', 'lib'),
+            stdio: 'inherit'
+          });
+          run.on('close', resolve);
         });
-        run.on('close', resolve);
-      });
+      }
     }
   } as Plugin;
 }

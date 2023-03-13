@@ -1,7 +1,7 @@
 import Router from 'koa-router';
 import Koa from 'koa';
 import compose from 'koa-compose';
-import { routeRule, routeRules, SymbolRouter } from './constants';
+import { ChumiControllerOptions, routeRule, routeRules, SymbolRouter } from './constants';
 
 export default class ChumiRouter<T> {
   private routes: Router<Koa.Context, T>[] = [];
@@ -18,7 +18,7 @@ export default class ChumiRouter<T> {
 
   private routeRules: routeRules = [];
 
-  public constructor(controllers: Object[]) {
+  public constructor(controllers: Object[], options?: ChumiControllerOptions) {
     const router = new Router<Koa.Context, T>();
 
     this.routes.push(router);
@@ -37,7 +37,7 @@ export default class ChumiRouter<T> {
       // 注入chumi路由标识
       router[SymbolRouter] = SymbolRouter;
       // eslint-disable-next-line no-new
-      new Controller(router, this.prefix.bind(this), this.storeRouteRule.bind(this));
+      new Controller(router, this.prefix.bind(this), this.storeRouteRule.bind(this), options);
     });
   }
 

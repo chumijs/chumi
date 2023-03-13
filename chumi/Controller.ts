@@ -13,7 +13,8 @@ import {
   SymbolRouter,
   routeRule,
   SymbolApiTags,
-  SymbolPut
+  SymbolPut,
+  ChumiControllerOptions
 } from './constants';
 
 const handleParameter = (parameterMap: parameterMap[], ctx: Context) => {
@@ -55,7 +56,8 @@ export default (
     return function Ctr(
       router: InstanceType<typeof ChumiRouter>,
       createPrefixRouter: (prefix: string) => InstanceType<typeof ChumiRouter>,
-      storeRouteRule: (rule: routeRule) => void
+      storeRouteRule: (rule: routeRule) => void,
+      options: ChumiControllerOptions
     ) {
       // 解决传入的不是当前chumi实例化的问题
       // 即：使用chumi定义的控制器实例，必须通过chumi进行实例化才生效，否则将不做任何处理
@@ -67,6 +69,8 @@ export default (
         return;
       }
 
+      const realPrefix = (options.prefix ?? '') + (prefix ?? '');
+
       // 初始化当前控制器实例
       const targetControllerInstance = new TargetControllerClass();
 
@@ -74,7 +78,7 @@ export default (
       const allProperties = Object.getOwnPropertyNames(
         Object.getPrototypeOf(targetControllerInstance)
       );
-      const currentRouter = prefix ? createPrefixRouter(prefix) : router;
+      const currentRouter = realPrefix ? createPrefixRouter(realPrefix) : router;
 
       routerOptions?.middlewares?.forEach((middleware) => {
         currentRouter.use(middleware);
@@ -127,7 +131,7 @@ export default (
 
           storeRouteRule({
             method,
-            path: (prefix || '') + action.routePath,
+            path: (realPrefix || '') + action.routePath,
             parameterMap,
             routeOptions: action.routeOptions,
             tags: Ctr[SymbolApiTags] ?? []
@@ -142,6 +146,7 @@ export default (
               parameters = handleParameter(parameterMap, ctx);
             }
 
+            ctx.chumi = options.data;
             const that = Object.assign(targetControllerInstance, { ctx });
 
             const cacheServiceInstances = {};

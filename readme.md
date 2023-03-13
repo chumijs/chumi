@@ -8,8 +8,6 @@
 
 ![image.png](https://s1.ax1x.com/2023/03/09/ppnJJeA.png)
 
-
-
 ## 功能
 1. - [x] 解决运行时丢失TypeScript类型标注的问题，这很关键，否则所谓的类型注解将没有任何意义
 2. - [x] Controller层注解
@@ -17,6 +15,7 @@
 4. - [x] Service引用Service，同时保证注入的ctx上下文是一致性的
 5. - [x] 单元测试
 6. - [x] 支持swagger
+7. - [x] chumi options支持统一路由prefix，传data到控制器中，可以使用`ctx.chumi`获取
 7. - [ ] serverless
 
 ## 调试
