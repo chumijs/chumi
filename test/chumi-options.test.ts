@@ -110,6 +110,22 @@ describe('Chumi Options', () => {
     server.close();
   });
 
+  test('test data more instance', async () => {
+    const app = new Koa();
+    app.use(chumi([Sample3], { prefix: '/api1', data: { a: 2 } }));
+    app.use(chumi([Sample3], { prefix: '/api2', data: { a: 3 } }));
+    const server = app.listen();
+    const request = supertest(server);
+
+    const res1 = await request.get('/api1/test3/1').then((res) => res.body);
+    const res2 = await request.get('/api2/test3/2').then((res) => res.body);
+
+    expect(res1.a).toBe(2);
+    expect(res2.a).toBe(3);
+
+    server.close();
+  });
+
   test('test no data', async () => {
     const app = new Koa();
     app.use(chumi([Sample3], { prefix: '/api' }));
