@@ -78,33 +78,43 @@ export const chumi = <T>(controllers: Object[], options?: ChumiOptions<T & Conte
     chumiRouter
   );
   return async (ctx: T & Context, next: Next) => {
-    if (options?.swagger) {
-      // 开启swagger
-      // eslint-disable-next-line no-new
-      if (await swaggerInstance.run(ctx)) {
-        return next();
-      }
-    }
-
     try {
+      // chumi入口
       await options?.onStart?.(ctx);
-      const skip = options?.skip?.(ctx) ?? false;
+
+      // 判断是否跳过chumi业务
+      const skip = (await options?.skip?.(ctx)) ?? false;
       if (!skip) {
         // 不跳过，需要走chumi业务逻辑
-        await new Promise<void>((resolve) => {
-          if (options?.koaBody) {
-            koaBody(options.koaBody)(ctx, async () => resolve());
-          } else {
-            resolve();
+        let hitSwagger = false;
+        if (options?.swagger) {
+          // 开启swagger
+          if (await swaggerInstance.run(ctx)) {
+            // 匹配到swagger地址，则不继续执行，直接返回
+            hitSwagger = true;
+            return;
           }
-        });
-        await chumiRouter.mount(ctx, next);
+        }
+        // 没有命中swagger，则继续执行当前的chumi核心业务
+        if (!hitSwagger) {
+          await new Promise<void>((resolve) => {
+            if (options?.koaBody) {
+              koaBody(options.koaBody)(ctx, async () => resolve());
+            } else {
+              resolve();
+            }
+          });
+          await chumiRouter.mount(ctx, next);
+        }
       } else {
         // 直接跳过
         await next();
       }
+
+      // chumi执行成功
       await options?.onSuccess?.(ctx);
     } catch (error) {
+      // chumi执行失败
       ctx.status = 500;
       if (options?.onError) {
         options.onError(ctx, error);
@@ -112,6 +122,7 @@ export const chumi = <T>(controllers: Object[], options?: ChumiOptions<T & Conte
         throw error;
       }
     } finally {
+      // chumi完成本次请求
       await options?.onFinish?.(ctx);
     }
   };
