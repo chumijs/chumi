@@ -137,4 +137,23 @@ describe('Chumi Options', () => {
 
     server.close();
   });
+
+  test('test skip', async () => {
+    const app = new Koa();
+    app.use(
+      chumi([Sample3], {
+        prefix: '/api',
+        skip() {
+          return true;
+        }
+      })
+    );
+    const server = app.listen();
+    const request = supertest(server);
+
+    const res = await request.get('/api/test3/1').then((res) => res.text);
+    expect(res).toBe('Not Found');
+
+    server.close();
+  });
 });

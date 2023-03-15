@@ -16,7 +16,7 @@ export { default as Controller } from './Controller';
 export { default as Service } from './Service';
 export { default as ApiTags } from './ApiTags';
 
-export interface ChumiOptions {
+export interface ChumiOptions<T> {
   /**
    * 如果项目之前已经使用了koa-body，或者类似的处理函数，这个参数就不需要传了
    */
@@ -24,19 +24,19 @@ export interface ChumiOptions {
   /**
    * 当chumi中间件开始时触发
    */
-  onStart?: (ctx: Context) => Promise<void> | void;
+  onStart?: (ctx: T) => Promise<void> | void;
   /**
    * 当chumi中间件业务发生错误时触发
    */
-  onError?: (ctx: Context, error: Error) => Promise<void> | void;
+  onError?: (ctx: T, error: Error) => Promise<void> | void;
   /**
    * 当chumi中间件业务成功时触发
    */
-  onSuccess?: (ctx: Context) => Promise<void> | void;
+  onSuccess?: (ctx: T) => Promise<void> | void;
   /**
    * 当chumi中间件业务完成时触发
    */
-  onFinish?: (ctx: Context) => Promise<void> | void;
+  onFinish?: (ctx: T) => Promise<void> | void;
   /**
    * 开启swagger
    *
@@ -53,12 +53,19 @@ export interface ChumiOptions {
    * 在控制器可以使用，ctx.chumi 获取到当前传的数据
    */
   data?: Record<string | number, any>;
+  /**
+   * 是否跳过chumi路由和控制器，即不执行chumi任何路由挂载逻辑
+   *
+   * 1. 返回`true`表示跳过
+   * 2. 返回`false`表示不跳过
+   */
+  skip?: (ctx: T) => Promise<boolean> | boolean;
 }
 
 /**
  * 基于koa的运行时中间件框架
  */
-export const chumi = (controllers: Object[], options?: ChumiOptions) => {
+export const chumi = <T>(controllers: Object[], options?: ChumiOptions<T & Context>) => {
   const chumiRouter = new ChumiRouter(controllers, {
     prefix: options?.prefix,
     data: options?.data
@@ -70,7 +77,7 @@ export const chumi = (controllers: Object[], options?: ChumiOptions) => {
     },
     chumiRouter
   );
-  return async (ctx: Context, next: Next) => {
+  return async (ctx: T & Context, next: Next) => {
     if (options?.swagger) {
       // 开启swagger
       // eslint-disable-next-line no-new
@@ -81,14 +88,21 @@ export const chumi = (controllers: Object[], options?: ChumiOptions) => {
 
     try {
       await options?.onStart?.(ctx);
-      await new Promise<void>((resolve) => {
-        if (options?.koaBody) {
-          koaBody(options.koaBody)(ctx, async () => resolve());
-        } else {
-          resolve();
-        }
-      });
-      await chumiRouter.mount(ctx, next);
+      const skip = options?.skip?.(ctx) ?? false;
+      if (!skip) {
+        // 不跳过，需要走chumi业务逻辑
+        await new Promise<void>((resolve) => {
+          if (options?.koaBody) {
+            koaBody(options.koaBody)(ctx, async () => resolve());
+          } else {
+            resolve();
+          }
+        });
+        await chumiRouter.mount(ctx, next);
+      } else {
+        // 直接跳过
+        await next();
+      }
       await options?.onSuccess?.(ctx);
     } catch (error) {
       ctx.status = 500;
