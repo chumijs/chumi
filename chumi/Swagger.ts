@@ -133,7 +133,15 @@ export default class Swagger {
           }
         });
 
-        const methodOptions: any = { parameters, tags: item.tags };
+        const methodOptions: any = {
+          parameters,
+          tags: item.tags,
+          responses: {
+            '200': {
+              description: 'OK'
+            }
+          }
+        };
 
         if (item.routeOptions?.summary) {
           methodOptions.summary = item.routeOptions.summary;

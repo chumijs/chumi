@@ -45,8 +45,28 @@ describe('Chumi Swagger', () => {
         },
         tags: [],
         paths: {
-          '/api/test1/{id}': { get: { parameters: [], tags: [] } },
-          '/api/test2/{id}': { get: { parameters: [], tags: [] } }
+          '/api/test1/{id}': {
+            get: {
+              parameters: [],
+              tags: [],
+              responses: {
+                '200': {
+                  description: 'OK'
+                }
+              }
+            }
+          },
+          '/api/test2/{id}': {
+            get: {
+              parameters: [],
+              tags: [],
+              responses: {
+                '200': {
+                  description: 'OK'
+                }
+              }
+            }
+          }
         }
       })
     );
@@ -73,7 +93,19 @@ describe('Chumi Swagger', () => {
           contact: {}
         },
         tags: [],
-        paths: { '/api1/test1/{id}': { get: { parameters: [], tags: [] } } }
+        paths: {
+          '/api1/test1/{id}': {
+            get: {
+              parameters: [],
+              tags: [],
+              responses: {
+                '200': {
+                  description: 'OK'
+                }
+              }
+            }
+          }
+        }
       })
     );
 
@@ -99,7 +131,19 @@ describe('Chumi Swagger', () => {
           contact: {}
         },
         tags: [],
-        paths: { '/api2/test2/{id}': { get: { parameters: [], tags: [] } } }
+        paths: {
+          '/api2/test2/{id}': {
+            get: {
+              parameters: [],
+              tags: [],
+              responses: {
+                '200': {
+                  description: 'OK'
+                }
+              }
+            }
+          }
+        }
       })
     );
 
