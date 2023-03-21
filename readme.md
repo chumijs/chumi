@@ -1,34 +1,22 @@
-# Chumi · [![NPM version](https://img.shields.io/npm/v/chumi.svg)](https://www.npmjs.com/package/chumi) [![build](https://img.shields.io/circleci/build/github/chumijs/chumi/master.svg)](https://circleci.com/gh/chumijs/chumi) [![coverage](https://img.shields.io/codecov/c/github/chumijs/chumi/master.svg)](https://app.codecov.io/gh/chumijs/chumi/tree/master) · [DOCUMENTATION](https://juejin.cn/post/7208099384071192635)
+# Chumi · [![NPM version](https://img.shields.io/npm/v/chumi.svg)](https://www.npmjs.com/package/chumi) [![build](https://img.shields.io/circleci/build/github/chumijs/chumi/master.svg)](https://circleci.com/gh/chumijs/chumi) [![coverage](https://img.shields.io/codecov/c/github/chumijs/chumi/master.svg)](https://app.codecov.io/gh/chumijs/chumi/tree/master) 
 
-> **基于koa，在运行时，提供Controller、Route、Parameter、Service等功能注解的中间件框架**
->
-> **可以在任何支持koa中间件的项目或者框架里面使用**
->
-> **核心代码目录：** [`chumi/`](./chumi/)
+基于koa，在运行时，提供Controller、Route、Parameter、Service等功能的注解的中间件框架，可以在任何支持koa中间件的项目或者框架里面使用
+
+## 示例
+
+1. [⚡️ koa、vite、vue3](https://github.com/chumijs/chumi-vite)
+
+2. [🥚 Egg](https://github.com/chumijs/chumi-egg)
+
+3. [🍔 Midway](https://github.com/chumijs/chumi-midway)
+
+4. [🦅 Nest](https://github.com/chumijs/chumi-nest)
+
+5. [🎨 Next.js](https://github.com/chumijs/chumi-next)
+
+## 架构图
 
 ![image.png](https://s1.ax1x.com/2023/03/09/ppnJJeA.png)
-
-## 功能
-1. - [x] 解决运行时丢失TypeScript类型标注的问题，这很关键，否则所谓的类型注解将没有任何意义
-2. - [x] Controller层注解
-3. - [x] Service层注解
-4. - [x] Service引用Service，同时保证注入的ctx上下文是一致性的
-5. - [x] 单元测试
-6. - [x] 支持swagger
-7. - [x] chumi options支持统一路由prefix，传data到控制器中，可以使用`ctx.chumi`获取
-7. - [ ] serverless
-
-## 调试
-
-```sh
-$ yarn tsx sample/server.ts
-```
-
-## 测试
-
-```sh
-$ yarn test
-```
 
 ## Apis
 
