@@ -89,7 +89,7 @@ export const chumi = <T>(controllers: Object[], options?: ChumiOptions<T & Conte
         let hitSwagger = false;
         if (options?.swagger) {
           // 开启swagger
-          if (await swaggerInstance.run(ctx)) {
+          if (await swaggerInstance.run(ctx, next)) {
             // 匹配到swagger地址，则不继续执行，直接返回
             hitSwagger = true;
             return;
