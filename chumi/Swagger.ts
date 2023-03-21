@@ -1,4 +1,4 @@
-import { Context } from 'koa';
+import { Context, Next } from 'koa';
 import fs from 'fs';
 import path from 'path';
 import { getAbsoluteFSPath } from 'swagger-ui-dist';
@@ -18,6 +18,7 @@ export default class Swagger {
   private options: SwaggerOptions;
   private chumiRouter: InstanceType<typeof ChumiRouter>;
   private swaggerJSON: any = null;
+  private first = false;
 
   // 保证是在同一个实例里面，支持多实例场景
   private defaultOptions: SwaggerOptions = {
@@ -42,7 +43,32 @@ export default class Swagger {
     return content.replace('"https://petstore.swagger.io/v2/swagger.json",', str);
   }
 
-  async run(ctx: Context) {
+  mergeSwagger(data: any[]) {
+    // 合并tags和paths
+    const tags = [];
+    const paths = {};
+    data.forEach((item) => {
+      tags.push(...item.tags);
+      if (item.paths) {
+        for (const key in item.paths) {
+          if (!paths[key]) {
+            paths[key] = {};
+          }
+          Object.assign(paths[key], item.paths[key]);
+        }
+      }
+    });
+
+    this.first = false;
+
+    return {
+      ...data[0],
+      tags,
+      paths
+    };
+  }
+
+  async run(ctx: Context, next: Next) {
     const pathname = ctx.path;
     if (!this.swaggerUiAssetPath || pathname.indexOf(this.options.swaggerPath) === -1) {
       return false;
@@ -51,7 +77,15 @@ export default class Swagger {
     let lastName = arr.pop();
     if (lastName === 'index.json') {
       if (this.swaggerJSON) {
-        ctx.body = this.swaggerJSON;
+        if (!ctx.body) {
+          this.first = true;
+          ctx.body = [];
+        }
+        (ctx.body as any).push(this.swaggerJSON);
+        await next();
+        if (this.first) {
+          ctx.body = this.mergeSwagger(ctx.body as any[]);
+        }
         return true;
       }
 
@@ -124,8 +158,15 @@ export default class Swagger {
       };
 
       this.swaggerJSON = result;
-
-      ctx.body = result;
+      if (!ctx.body) {
+        this.first = true;
+        ctx.body = [];
+      }
+      (ctx.body as any).push(result);
+      await next();
+      if (this.first) {
+        ctx.body = this.mergeSwagger(ctx.body as any[]);
+      }
       return true;
     }
     if (!lastName) {

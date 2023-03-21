@@ -1,4 +1,4 @@
-import { ApiTags, Controller, Delete, Get, loadService, Param, Post, Put, Query } from '../chumi';
+import { ApiTags, Controller, loadService, Param, Post, Put, Query } from '../chumi';
 import { Context } from 'koa';
 import service from './service';
 
