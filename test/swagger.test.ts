@@ -157,6 +157,7 @@ describe('Chumi Swagger', () => {
       try {
         await next();
       } catch (error) {
+        ctx.status = 500;
         ctx.body = error.message;
       }
     });
@@ -166,9 +167,36 @@ describe('Chumi Swagger', () => {
     const server = app.listen();
     const request = supertest(server);
 
-    const res = await request.get('/swagger-ui/index.json').then((res) => res.text);
+    const res = await request
+      .get('/swagger-ui/index.json')
+      .expect(200)
+      .then((res) => res.text);
 
-    expect(res).toBe('error');
+    expect(res).toBe(
+      JSON.stringify({
+        openapi: '3.0.1',
+        info: {
+          title: 'My Project',
+          description: 'This is a swagger-ui for chumi',
+          version: '1.0.0',
+          contact: {}
+        },
+        tags: [],
+        paths: {
+          '/test1/{id}': {
+            get: {
+              parameters: [],
+              tags: [],
+              responses: {
+                '200': {
+                  description: 'OK'
+                }
+              }
+            }
+          }
+        }
+      })
+    );
 
     server.close();
   });

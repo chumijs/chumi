@@ -47,28 +47,25 @@ export default class Swagger {
     // 合并tags和paths
     const tags = [];
     const paths = {};
-    if (Array.isArray(data)) {
-      data.forEach((item) => {
-        tags.push(...item.tags);
-        if (item.paths) {
-          for (const key in item.paths) {
-            if (!paths[key]) {
-              paths[key] = {};
-            }
-            Object.assign(paths[key], item.paths[key]);
+    data.forEach((item) => {
+      tags.push(...item.tags);
+      if (item.paths) {
+        for (const key in item.paths) {
+          if (!paths[key]) {
+            paths[key] = {};
           }
+          Object.assign(paths[key], item.paths[key]);
         }
-      });
+      }
+    });
 
-      this.first = false;
+    this.first = false;
 
-      return {
-        ...data[0],
-        tags,
-        paths
-      };
-    }
-    return data;
+    return {
+      ...data[0],
+      tags,
+      paths
+    };
   }
 
   async run(ctx: Context, next: Next) {
@@ -80,14 +77,18 @@ export default class Swagger {
     let lastName = arr.pop();
     if (lastName === 'index.json') {
       if (this.swaggerJSON) {
-        if (!ctx.body) {
+        if (!ctx.swaggerBody) {
           this.first = true;
-          ctx.body = [];
+          ctx.swaggerBody = [];
         }
-        (ctx.body as any).push(this.swaggerJSON);
-        await next();
+        ctx.swaggerBody.push(this.swaggerJSON);
+        // 这里的await只处理swagger，屏幕所有的错误
+        try {
+          await next();
+        } catch (error) {}
         if (this.first) {
-          ctx.body = this.mergeSwagger(ctx.body as any[]);
+          ctx.status = 200;
+          ctx.body = this.mergeSwagger(ctx.swaggerBody);
         }
         return true;
       }
@@ -169,14 +170,18 @@ export default class Swagger {
       };
 
       this.swaggerJSON = result;
-      if (!ctx.body) {
+      if (!ctx.swaggerBody) {
         this.first = true;
-        ctx.body = [];
+        ctx.swaggerBody = [];
       }
-      (ctx.body as any).push(result);
-      await next();
+      ctx.swaggerBody.push(result);
+      // 这里的await只处理swagger，屏幕所有的错误
+      try {
+        await next();
+      } catch (error) {}
       if (this.first) {
-        ctx.body = this.mergeSwagger(ctx.body as any[]);
+        ctx.status = 200;
+        ctx.body = this.mergeSwagger(ctx.swaggerBody);
       }
       return true;
     }
