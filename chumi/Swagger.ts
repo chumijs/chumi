@@ -70,21 +70,25 @@ export default class Swagger {
 
   async run(ctx: Context, next: Next) {
     const pathname = ctx.path;
-    if (!this.swaggerUiAssetPath || pathname.indexOf(this.options.swaggerPath) === -1) {
+    if (!this.swaggerUiAssetPath || !pathname.startsWith(this.options.swaggerPath)) {
       return false;
     }
     const arr = pathname.split('/');
     let lastName = arr.pop();
     if (lastName === 'index.json') {
       if (this.swaggerJSON) {
-        if (!ctx.body) {
+        if (!ctx.swaggerBody) {
           this.first = true;
-          ctx.body = [];
+          ctx.swaggerBody = [];
         }
-        (ctx.body as any).push(this.swaggerJSON);
-        await next();
+        ctx.swaggerBody.push(this.swaggerJSON);
+        // 这里的await只处理swagger，屏幕所有的错误
+        try {
+          await next();
+        } catch (error) {}
         if (this.first) {
-          ctx.body = this.mergeSwagger(ctx.body as any[]);
+          ctx.status = 200;
+          ctx.body = this.mergeSwagger(ctx.swaggerBody);
         }
         return true;
       }
@@ -166,14 +170,18 @@ export default class Swagger {
       };
 
       this.swaggerJSON = result;
-      if (!ctx.body) {
+      if (!ctx.swaggerBody) {
         this.first = true;
-        ctx.body = [];
+        ctx.swaggerBody = [];
       }
-      (ctx.body as any).push(result);
-      await next();
+      ctx.swaggerBody.push(result);
+      // 这里的await只处理swagger，屏幕所有的错误
+      try {
+        await next();
+      } catch (error) {}
       if (this.first) {
-        ctx.body = this.mergeSwagger(ctx.body as any[]);
+        ctx.status = 200;
+        ctx.body = this.mergeSwagger(ctx.swaggerBody);
       }
       return true;
     }
