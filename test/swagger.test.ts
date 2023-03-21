@@ -149,4 +149,27 @@ describe('Chumi Swagger', () => {
 
     server.close();
   });
+
+  test('test chumi swagger error response', async () => {
+    const app = new Koa();
+    app.use(chumi([Sample1], { swagger: {} }));
+    app.use(async (ctx, next) => {
+      try {
+        await next();
+      } catch (error) {
+        ctx.body = error.message;
+      }
+    });
+    app.use(async () => {
+      throw new Error('error');
+    });
+    const server = app.listen();
+    const request = supertest(server);
+
+    const res = await request.get('/swagger-ui/index.json').then((res) => res.text);
+
+    expect(res).toBe('error');
+
+    server.close();
+  });
 });

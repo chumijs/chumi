@@ -47,25 +47,28 @@ export default class Swagger {
     // 合并tags和paths
     const tags = [];
     const paths = {};
-    data.forEach((item) => {
-      tags.push(...item.tags);
-      if (item.paths) {
-        for (const key in item.paths) {
-          if (!paths[key]) {
-            paths[key] = {};
+    if (Array.isArray(data)) {
+      data.forEach((item) => {
+        tags.push(...item.tags);
+        if (item.paths) {
+          for (const key in item.paths) {
+            if (!paths[key]) {
+              paths[key] = {};
+            }
+            Object.assign(paths[key], item.paths[key]);
           }
-          Object.assign(paths[key], item.paths[key]);
         }
-      }
-    });
+      });
 
-    this.first = false;
+      this.first = false;
 
-    return {
-      ...data[0],
-      tags,
-      paths
-    };
+      return {
+        ...data[0],
+        tags,
+        paths
+      };
+    }
+    return data;
   }
 
   async run(ctx: Context, next: Next) {
