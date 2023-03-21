@@ -6,7 +6,7 @@
 
 1. [⚡️ 使用koa、vite、vue3搭建一个原始的全栈开发环境，集成chumi示例，帮助开发者更好的组织后端业务代码](https://github.com/chumijs/chumi-vite)
 
-2. [🥚 Egg框架 - 集成chumi示例，由于chumi的多实例特性，可以在插件里面使用chumi，**目前已经在生产使用验证过**](https://github.com/chumijs/chumi-egg)
+2. [🥚 Egg框架 - 集成chumi示例，由于chumi的多实例特性，可以集成到Egg插件，**目前已经在生产使用验证过**](https://github.com/chumijs/chumi-egg)
 
 3. [🍔 Midway框架 - 集成chumi示例](https://github.com/chumijs/chumi-midway)
 
