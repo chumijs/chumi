@@ -70,7 +70,7 @@ export default class Swagger {
 
   async run(ctx: Context, next: Next) {
     const pathname = ctx.path;
-    if (!this.swaggerUiAssetPath || pathname.indexOf(this.options.swaggerPath) === -1) {
+    if (!this.swaggerUiAssetPath || !pathname.startsWith(this.options.swaggerPath)) {
       return false;
     }
     const arr = pathname.split('/');
