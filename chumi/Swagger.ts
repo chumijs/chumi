@@ -10,7 +10,8 @@ const parametersInMap: { [key in parameterMap['type']]: string } = {
   param: 'path',
   header: 'header',
   query: 'query',
-  body: 'body'
+  body: 'body',
+  files: 'file'
 };
 
 export default class Swagger {

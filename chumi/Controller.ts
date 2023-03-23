@@ -38,6 +38,12 @@ const handleParameter = (parameterMap: parameterMap[], ctx: Context) => {
         : ctx.request.body[item.property as string];
     }
 
+    if (item.type === 'files') {
+      parameters[item.parameterIndex] = isAll
+        ? ctx.request.files
+        : ctx.request.files[item.property as string];
+    }
+
     switch (item.dataType) {
       case String:
         parameters[item.parameterIndex] = String(parameters[item.parameterIndex]);

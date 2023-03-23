@@ -1,5 +1,4 @@
 import { Middleware } from 'koa';
-import { type } from 'os';
 
 export const SymbolGet = Symbol('get');
 export const SymbolPost = Symbol('post');
@@ -19,7 +18,7 @@ export type BaseDataType = StringConstructor | NumberConstructor;
 export interface parameterMap {
   property: string | symbol;
   parameterIndex: number;
-  type: 'query' | 'param' | 'body' | 'header';
+  type: 'query' | 'param' | 'body' | 'header' | 'files';
   dataType: BaseDataType;
 }
 

@@ -106,6 +106,7 @@ import chumi, {
   Query,
   Body,
   Header,
+  Files,
   ApiTags,
   loadService
 } from 'chumi';

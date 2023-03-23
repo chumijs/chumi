@@ -21,7 +21,6 @@ describe('chumi-route-path', () => {
   const serverInstance = [];
 
   afterAll(() => {
-    console.log('after');
     serverInstance.forEach((server) => server.close());
   });
 
