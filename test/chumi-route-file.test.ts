@@ -1,11 +1,10 @@
 /**
  * 文件上传 @Files
- * 支持form-data @fields
  */
 import Koa, { Context } from 'koa';
 import path from 'path';
 import supertest from 'supertest';
-import chumi, { ALL, Controller, Files, Post } from '../chumi';
+import chumi, { ALL, Body, Controller, Files, Post } from '../chumi';
 import { File, Files as FilesType } from 'formidable';
 
 describe('files', () => {
@@ -59,8 +58,8 @@ describe('files', () => {
       ctx: Context;
 
       @Post('/upload')
-      async upload(@Files(ALL) files: Record<string, File>) {
-        return [files.file1.originalFilename, files.file2.originalFilename].sort().join(',');
+      async upload(@Files(ALL) files: Record<string, File>, @Body('test') test: string) {
+        return [files.file1.originalFilename, files.file2.originalFilename, test].sort().join(',');
       }
     }
     app.use(chumi([Sample], { koaBody: { multipart: true } }));
@@ -78,7 +77,7 @@ describe('files', () => {
         .attach('file1', path.join(__dirname, './fixtures/normal/home.ts'))
         .attach('file2', path.join(__dirname, './fixtures/small/index.ts'))
         .then((res) => res.text);
-      expect(res).toBe(`home.ts,index.ts`);
+      expect(res).toBe(`home.ts,index.ts,uploadFile`);
       done();
     })();
   });
