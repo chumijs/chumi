@@ -98,7 +98,7 @@ describe('chumi-route-path', () => {
     })();
   });
 
-  test.only('more route', (done) => {
+  test('more route', (done) => {
     const app = new Koa();
     const fn = jest.fn();
     @Controller()

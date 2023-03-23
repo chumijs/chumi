@@ -1,5 +1,5 @@
 import 'koa-body';
-import Koa, { Context, Next } from 'koa';
+import Koa, { Context } from 'koa';
 import ChumiRouter from './ChumiRouter';
 import {
   SymbolGet,
@@ -113,16 +113,13 @@ export default (
         if (actionName !== 'constructor') {
           const action: MethodAction = targetControllerInstance[actionName];
 
-          action.routeInfo.forEach((routeInfo) => {
-            const routerMethodInfo = routerMethodMap[routeInfo.routeMethod];
-            if (!routerMethodInfo) {
-              return;
-            }
-
-            const { method, routeAction } = routerMethodInfo as {
+          action.routeInfo?.forEach((routeInfo) => {
+            const routerMethodInfo: {
               method: string;
               routeAction: Router<Koa.Context, any>['all'];
-            };
+            } = routerMethodMap[routeInfo.routeMethod];
+
+            const { method, routeAction } = routerMethodInfo;
 
             /**
              * 处理配置，交给swagger
