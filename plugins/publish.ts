@@ -70,7 +70,7 @@ export default function compressServerCode() {
        */
       fs.writeFileSync(
         path.join(__dirname, '..', 'lib', 'readme.md'),
-        `# Chumi · [![NPM version](https://img.shields.io/npm/v/chumi.svg)](https://www.npmjs.com/package/chumi) [![build](https://img.shields.io/circleci/build/github/chumijs/chumi/master.svg)](https://circleci.com/gh/chumijs/chumi) [![coverage](https://img.shields.io/codecov/c/github/chumijs/chumi/master.svg)](https://app.codecov.io/gh/chumijs/chumi/tree/master) [![NPM downloads](http://img.shields.io/npm/dm/chumi.svg)](http://www.npmtrends.com/chumi)
+        `# Chumi · [![NPM version](https://img.shields.io/npm/v/chumi.svg)](https://www.npmjs.com/package/chumi) [![build](https://img.shields.io/circleci/build/github/chumijs/chumi/master.svg)](https://circleci.com/gh/chumijs/chumi) [![coverage](https://img.shields.io/codecov/c/github/chumijs/chumi/master.svg)](https://app.codecov.io/gh/chumijs/chumi/tree/master) [![NPM downloads](http://img.shields.io/npm/dm/chumi.svg)](http://www.npmtrends.com/chumi) [![stackblitz demo](https://img.shields.io/badge/stackblitz-chumi-brightgreen)](https://stackblitz.com/edit/node-h13evz)
 
 基于koa，在运行时，提供Controller、Route、Parameter、Service等功能的注解的中间件框架，可以在任何支持koa中间件的项目或者框架里面使用
 
