@@ -1,3 +1,6 @@
+import { Middleware } from 'koa';
+import { type } from 'os';
+
 export const SymbolGet = Symbol('get');
 export const SymbolPost = Symbol('post');
 export const SymbolDelete = Symbol('delete');
@@ -36,6 +39,7 @@ export type SwaggerOptions = Partial<{
 
 export type RouteOptions = Partial<{
   summary: string;
+  middleware: Middleware[];
 }>;
 
 export interface routeRule {
@@ -46,9 +50,19 @@ export interface routeRule {
   tags: string[];
 }
 
+export type routePath = string | RegExp;
+
 export type routeRules = routeRule[];
 
 export interface ChumiControllerOptions {
   prefix?: string;
   data?: Record<string | number, any>;
 }
+
+export type MethodAction = Function & {
+  routeInfo: {
+    routePath: routePath;
+    routeMethod: symbol;
+    routeOptions: RouteOptions;
+  }[];
+};
