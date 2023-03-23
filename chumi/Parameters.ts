@@ -62,3 +62,7 @@ Body.number = function (property?: string): ParameterDecorator {
 export const Header = (property?: string | typeof ALL): ParameterDecorator => {
   return handleParameterDecorator('header', property);
 };
+
+export const Files = (property?: string | typeof ALL): ParameterDecorator => {
+  return handleParameterDecorator('files', property);
+};

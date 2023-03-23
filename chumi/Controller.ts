@@ -14,8 +14,10 @@ import {
   routeRule,
   SymbolApiTags,
   SymbolPut,
-  ChumiControllerOptions
+  ChumiControllerOptions,
+  MethodAction
 } from './constants';
+import Router from 'koa-router';
 
 const handleParameter = (parameterMap: parameterMap[], ctx: Context) => {
   const parameters = Array.from(Array(parameterMap.length));
@@ -34,6 +36,12 @@ const handleParameter = (parameterMap: parameterMap[], ctx: Context) => {
       parameters[item.parameterIndex] = isAll
         ? ctx.request.body
         : ctx.request.body[item.property as string];
+    }
+
+    if (item.type === 'files') {
+      parameters[item.parameterIndex] = isAll
+        ? ctx.request.files
+        : ctx.request.files[item.property as string];
     }
 
     switch (item.dataType) {
@@ -91,88 +99,98 @@ export default (
       const routerMethodMap = {
         [SymbolGet]: {
           method: 'GET',
-          fn: currentRouter.get.bind(currentRouter)
+          routeAction: currentRouter.get.bind(currentRouter)
         },
         [SymbolPost]: {
           method: 'POST',
-          fn: currentRouter.post.bind(currentRouter)
+          routeAction: currentRouter.post.bind(currentRouter)
         },
         [SymbolDelete]: {
           method: 'Delete',
-          fn: currentRouter.delete.bind(currentRouter)
+          routeAction: currentRouter.delete.bind(currentRouter)
         },
         [SymbolPut]: {
           method: 'Put',
-          fn: currentRouter.put.bind(currentRouter)
+          routeAction: currentRouter.put.bind(currentRouter)
         }
       };
 
       allProperties.forEach((actionName) => {
         if (actionName !== 'constructor') {
-          const action = targetControllerInstance[actionName];
-          const routerMethodInfo = routerMethodMap[action.routeMethod];
-          if (!routerMethodInfo) {
-            return;
-          }
+          const action: MethodAction = targetControllerInstance[actionName];
 
-          const { method, fn } = routerMethodInfo;
+          action.routeInfo?.forEach((routeInfo) => {
+            const routerMethodInfo: {
+              method: string;
+              routeAction: Router<Koa.Context, any>['all'];
+            } = routerMethodMap[routeInfo.routeMethod];
 
-          /**
-           * 处理配置，交给swagger
-           */
+            const { method, routeAction } = routerMethodInfo;
 
-          let parameterMap: parameterMap[] = null;
-          if (
-            targetControllerInstance[SymbolParameter] &&
-            targetControllerInstance[SymbolParameter][actionName]
-          ) {
-            parameterMap = targetControllerInstance[SymbolParameter][actionName];
-          }
-
-          storeRouteRule({
-            method,
-            path: (realPrefix || '') + action.routePath,
-            parameterMap,
-            routeOptions: action.routeOptions,
-            tags: Ctr[SymbolApiTags] ?? []
-          });
-
-          fn(action.routePath, async (ctx: Context) => {
-            let parameters = [];
             /**
-             * 处理参数
+             * 处理配置，交给swagger
              */
-            if (parameterMap) {
-              parameters = handleParameter(parameterMap, ctx);
+
+            let parameterMap: parameterMap[] = null;
+            if (
+              targetControllerInstance[SymbolParameter] &&
+              targetControllerInstance[SymbolParameter][actionName]
+            ) {
+              parameterMap = targetControllerInstance[SymbolParameter][actionName];
             }
 
-            ctx.chumi = options.data;
-            const that = Object.assign(targetControllerInstance, { ctx });
+            storeRouteRule({
+              method,
+              path: (realPrefix || '') + routeInfo.routePath,
+              parameterMap,
+              routeOptions: routeInfo.routeOptions,
+              tags: Ctr[SymbolApiTags] ?? []
+            });
 
-            const cacheServiceInstances = {};
-
-            // proxy代理实现
-            const handler = {
-              get: function (target, property) {
-                // 当发现需要调用到service实例时，从缓存中取出实例
-                if (that[property]?.[SymbolServiceName] === SymbolService) {
-                  if (cacheServiceInstances[property]) {
-                    return cacheServiceInstances[property];
-                  }
-                  // 第一次，需要实例化，动态注入当前的ctx
-                  const serviceInstance = new that[property](ctx);
-                  cacheServiceInstances[property] = serviceInstance;
-                  return serviceInstance;
+            routeAction(
+              routeInfo.routePath,
+              /**
+               * 处理路由中间件业务
+               */
+              ...(routeInfo.routeOptions?.middleware || []),
+              async (ctx: Context) => {
+                let parameters = [];
+                /**
+                 * 处理参数
+                 */
+                if (parameterMap) {
+                  parameters = handleParameter(parameterMap, ctx);
                 }
 
-                return that[property];
-              }
-            };
+                ctx.chumi = options.data;
+                const that = Object.assign(targetControllerInstance, { ctx });
 
-            const result = await action.apply(new Proxy(that, handler), parameters);
-            if (!ctx.body) {
-              ctx.body = result ?? '';
-            }
+                const cacheServiceInstances = {};
+
+                // proxy代理实现
+                const handler = {
+                  get: function (target, property) {
+                    // 当发现需要调用到service实例时，从缓存中取出实例
+                    if (that[property]?.[SymbolServiceName] === SymbolService) {
+                      if (cacheServiceInstances[property]) {
+                        return cacheServiceInstances[property];
+                      }
+                      // 第一次，需要实例化，动态注入当前的ctx
+                      const serviceInstance = new that[property](ctx);
+                      cacheServiceInstances[property] = serviceInstance;
+                      return serviceInstance;
+                    }
+
+                    return that[property];
+                  }
+                };
+
+                const result = await action.apply(new Proxy(that, handler), parameters);
+                if (!ctx.body) {
+                  ctx.body = result ?? '';
+                }
+              }
+            );
           });
         }
       });

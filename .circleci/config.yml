@@ -32,7 +32,7 @@ jobs:
           key: v1-node-{{ arch }}-{{ .Branch }}-{{ checksum "yarn.lock" }}
           paths:
             - node_modules
-      - run: npm run test
+      - run: npm run cov
       - run: git branch
       - run:
           name: report coverage stats
