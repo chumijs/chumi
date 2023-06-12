@@ -70,13 +70,15 @@ export const chumi = <T>(controllers: Object[], options?: ChumiOptions<T & Conte
     prefix: options?.prefix,
     data: options?.data
   });
-  const swaggerInstance = new Swagger(
-    {
-      ...(options?.prefix ? { swaggerPath: options.prefix + '/swagger-ui' } : {}),
-      ...(options?.swagger ?? {})
-    },
-    chumiRouter
-  );
+  const swaggerInstance = options?.swagger
+    ? new Swagger(
+        {
+          ...(options.prefix ? { swaggerPath: options.prefix + '/swagger-ui' } : {}),
+          ...options.swagger
+        },
+        chumiRouter
+      )
+    : null;
   return async (ctx: T & Context, next: Next) => {
     try {
       // chumi入口
@@ -87,7 +89,7 @@ export const chumi = <T>(controllers: Object[], options?: ChumiOptions<T & Conte
       if (!skip) {
         // 不跳过，需要走chumi业务逻辑
         let hitSwagger = false;
-        if (options?.swagger) {
+        if (swaggerInstance) {
           // 开启swagger
           if (await swaggerInstance.run(ctx, next)) {
             // 匹配到swagger地址，则不继续执行，直接返回
