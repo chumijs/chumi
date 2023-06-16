@@ -61,11 +61,11 @@ export default (
   routerOptions?: { middlewares: Koa.Middleware[] }
 ): ClassDecorator => {
   return (TargetControllerClass: any): any => {
-    return function Ctr(
+    return function Ctr<T>(
       router: InstanceType<typeof ChumiRouter>,
       createPrefixRouter: (prefix: string) => InstanceType<typeof ChumiRouter>,
       storeRouteRule: (rule: routeRule) => void,
-      options: ChumiControllerOptions
+      options: ChumiControllerOptions<T>
     ) {
       // 解决传入的不是当前chumi实例化的问题
       // 即：使用chumi定义的控制器实例，必须通过chumi进行实例化才生效，否则将不做任何处理
@@ -87,6 +87,10 @@ export default (
         Object.getPrototypeOf(targetControllerInstance)
       );
       const currentRouter = realPrefix ? createPrefixRouter(realPrefix) : router;
+
+      options.middlewares?.forEach((middleware) => {
+        currentRouter.use(middleware as Koa.Middleware);
+      });
 
       routerOptions?.middlewares?.forEach((middleware) => {
         currentRouter.use(middleware);

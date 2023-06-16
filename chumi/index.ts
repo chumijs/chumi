@@ -64,6 +64,10 @@ export interface ChumiOptions<T> {
    * koa中间件数组，承担当前chumi路由的前置处理
    */
   middlewares?: ((ctx: T, next: Next) => Promise<void>)[];
+  /**
+   * 匹配到控制器路由，生效的中间件
+   */
+  controllerMiddlewares?: ((ctx: T, next: Next) => Promise<void>)[];
 }
 
 /**
@@ -81,14 +85,16 @@ export interface ChumiOptions<T> {
  *  swagger: 开启swagger
  *  prefix: 当前chumi下所有路由地址的统一前缀
  *  middlewares: 指定koa中间件数组
+ *  controllerMiddlewares: 指定koa中间件数组，仅当路由匹配到时触发，属于挂载在控制器上的中间件
  *  data
  *  skip
  * ```
  */
-export const chumi = <T>(controllers: Ctr, options?: ChumiOptions<T & Context>) => {
-  const chumiRouter = new ChumiRouter(controllers, {
+export const chumi = <T>(controllers: Ctr<T>, options?: ChumiOptions<T & Context>) => {
+  const chumiRouter = new ChumiRouter<T>(controllers, {
     prefix: options?.prefix,
-    data: options?.data
+    data: options?.data,
+    middlewares: options?.controllerMiddlewares
   });
   const swaggerInstance = options?.swagger
     ? new Swagger(

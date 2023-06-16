@@ -1,4 +1,4 @@
-import { Middleware } from 'koa';
+import { Middleware, Next } from 'koa';
 
 export const SymbolGet = Symbol('get');
 export const SymbolPost = Symbol('post');
@@ -53,9 +53,12 @@ export type routePath = string | RegExp;
 
 export type routeRules = routeRule[];
 
-export interface ChumiControllerOptions {
+export type middlewares<T> = ((ctx: T, next: Next) => Promise<void>)[];
+
+export interface ChumiControllerOptions<T> {
   prefix?: string;
   data?: Record<string | number, any>;
+  middlewares?: middlewares<T>;
 }
 
 export type MethodAction = Function & {
@@ -66,4 +69,6 @@ export type MethodAction = Function & {
   }[];
 };
 
-export type Ctr = Object[] | Record<string, Object[]>;
+export type Ctr<T> =
+  | Object[]
+  | Record<string, { controllers: Object[]; middlewares?: middlewares<T> } | Object[]>;

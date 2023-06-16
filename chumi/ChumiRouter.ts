@@ -18,7 +18,7 @@ export default class ChumiRouter<T> {
 
   private routeRules: routeRules = [];
 
-  public constructor(controllers: Ctr, options?: ChumiControllerOptions) {
+  public constructor(controllers: Ctr<T>, options?: ChumiControllerOptions<T>) {
     const router = new Router<Koa.Context, T>();
 
     this.routes.push(router);
@@ -42,7 +42,17 @@ export default class ChumiRouter<T> {
       });
     } else {
       for (const prefix in controllers) {
-        controllers[prefix].forEach((Controller: any) => {
+        const ctrInfo = controllers[prefix];
+        let ctrs = [];
+        let middlewares = [];
+        if (Array.isArray(ctrInfo)) {
+          ctrs = ctrInfo;
+        } else {
+          ctrs = ctrInfo.controllers;
+          middlewares = ctrInfo.middlewares ?? [];
+        }
+        options.middlewares = [...(options.middlewares ?? []), ...middlewares];
+        ctrs.forEach((Controller: any) => {
           // 注入chumi路由标识
           router[SymbolRouter] = SymbolRouter;
           // eslint-disable-next-line no-new
