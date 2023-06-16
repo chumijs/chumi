@@ -57,7 +57,7 @@ export default function compressServerCode() {
             'koa-body': '^5.0.0',
             'koa-compose': '^4.1.0',
             'koa-router': '^10.1.1',
-            'swagger-ui-dist': '^4.18.0'
+            'swagger-ui-dist': '^4.18.1'
           },
           repository: 'git@github.com:chumijs/chumi.git',
           author: 'topthinking',
