@@ -14,6 +14,16 @@ class Sample1 {
   async getError() {
     return this.ctx.path;
   }
+
+  @Get('/abc')
+  async getAbc() {
+    return this.ctx.abc;
+  }
+
+  @Get('/error')
+  async throwError() {
+    throw new Error();
+  }
 }
 
 @Controller()
@@ -121,7 +131,7 @@ describe('Chumi Options', () => {
     server.close();
   });
 
-  test('all prefix test prefix in single instance', async () => {
+  test('chumi prefix test prefix in single instance', async () => {
     const app = new Koa();
     app.use(
       chumi(
@@ -140,6 +150,83 @@ describe('Chumi Options', () => {
 
     expect(res1).toMatch('/test/api1/test1/1');
     expect(res2).toMatch('/test/api2/test1/2');
+
+    server.close();
+  });
+
+  test('test middleware in single instance', async () => {
+    const app = new Koa();
+    app.use(
+      chumi(
+        {
+          '/api': [Sample1]
+        },
+        {
+          swagger: {},
+          middlewares: [
+            async (ctx, next) => {
+              ctx.abc = 1;
+              await next();
+              expect(ctx.abc).toBe(2);
+            },
+            async (ctx, next) => {
+              ctx.abc = ctx.abc + 1;
+              await next();
+              expect(ctx.abc).toBe(2);
+            }
+          ]
+        }
+      )
+    );
+    const server = app.listen();
+    const request = supertest(server);
+
+    const res = await request.get('/api/abc').then((res) => res.text);
+
+    expect(res).toMatch('2');
+
+    server.close();
+  });
+
+  test('test middleware in single instance more feature', async () => {
+    const app = new Koa();
+    app.use(
+      chumi(
+        {
+          '/api': [Sample1]
+        },
+        {
+          swagger: {},
+          middlewares: [
+            async (ctx, next) => {
+              ctx.abc = 1;
+              try {
+                await next();
+                if (ctx.body) {
+                  ctx.body = {
+                    ret: 0,
+                    data: ctx.body
+                  };
+                }
+              } catch (error) {
+                ctx.status = 500;
+                ctx.body = {
+                  ret: -1
+                };
+              }
+            }
+          ]
+        }
+      )
+    );
+    const server = app.listen();
+    const request = supertest(server);
+
+    const res1 = await request.get('/api/abc').then((res) => res.text);
+    const res2 = await request.get('/api/error').then((res) => res.text);
+
+    expect(res1).toMatch(JSON.stringify({ ret: 0, data: 1 }));
+    expect(res2).toMatch(JSON.stringify({ ret: -1 }));
 
     server.close();
   });

@@ -60,6 +60,7 @@ export interface ChumiOptions<T> {
    * 2. 返回`false`表示不跳过
    */
   skip?: (ctx: T) => Promise<boolean> | boolean;
+  middlewares?: ((ctx: T, next: Next) => Promise<void>)[];
 }
 
 /**
@@ -94,39 +95,55 @@ export const chumi = <T>(controllers: Ctr, options?: ChumiOptions<T & Context>) 
         chumiRouter
       )
     : null;
+
+  const ml = options?.middlewares?.length ?? 0;
+
   return async (ctx: T & Context, next: Next) => {
     try {
       // chumi入口
       await options?.onStart?.(ctx);
 
-      // 判断是否跳过chumi业务
-      const skip = (await options?.skip?.(ctx)) ?? false;
-      if (!skip) {
-        // 不跳过，需要走chumi业务逻辑
-        let hitSwagger = false;
-        if (swaggerInstance) {
-          // 开启swagger
-          if (await swaggerInstance.run(ctx, next)) {
-            // 匹配到swagger地址，则不继续执行，直接返回
-            hitSwagger = true;
-            return;
-          }
-        }
-        // 没有命中swagger，则继续执行当前的chumi核心业务
-        if (!hitSwagger) {
-          await new Promise<void>((resolve) => {
-            if (options?.koaBody) {
-              koaBody(options.koaBody)(ctx, async () => resolve());
+      const loopMiddlewares = (i: number) => {
+        if (i < ml) {
+          const middleware = options.middlewares[i];
+          return async () => await middleware(ctx, loopMiddlewares(i + 1));
+        } else {
+          // 最后加载核心中间件业务
+          return async () => {
+            // 判断是否跳过chumi业务
+            const skip = (await options?.skip?.(ctx)) ?? false;
+            if (!skip) {
+              // 不跳过，需要走chumi业务逻辑
+              let hitSwagger = false;
+              if (swaggerInstance) {
+                // 开启swagger
+                if (await swaggerInstance.run(ctx, next)) {
+                  // 匹配到swagger地址，则不继续执行，直接返回
+                  hitSwagger = true;
+                  return;
+                }
+              }
+              // 没有命中swagger，则继续执行当前的chumi核心业务
+              if (!hitSwagger) {
+                await new Promise<void>((resolve) => {
+                  if (options?.koaBody) {
+                    koaBody(options.koaBody)(ctx, async () => resolve());
+                  } else {
+                    resolve();
+                  }
+                });
+                await chumiRouter.mount(ctx, next);
+              }
             } else {
-              resolve();
+              // 直接跳过
+              await next();
             }
-          });
-          await chumiRouter.mount(ctx, next);
+          };
         }
-      } else {
-        // 直接跳过
-        await next();
-      }
+      };
+
+      // 启动中间件
+      await loopMiddlewares(0)();
 
       // chumi执行成功
       await options?.onSuccess?.(ctx);
