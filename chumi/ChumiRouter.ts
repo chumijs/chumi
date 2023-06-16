@@ -1,7 +1,7 @@
 import Router from 'koa-router';
 import Koa from 'koa';
 import compose from 'koa-compose';
-import { ChumiControllerOptions, routeRule, routeRules, SymbolRouter } from './constants';
+import { ChumiControllerOptions, Ctr, routeRule, routeRules, SymbolRouter } from './constants';
 
 export default class ChumiRouter<T> {
   private routes: Router<Koa.Context, T>[] = [];
@@ -18,7 +18,7 @@ export default class ChumiRouter<T> {
 
   private routeRules: routeRules = [];
 
-  public constructor(controllers: Object[], options?: ChumiControllerOptions) {
+  public constructor(controllers: Ctr, options?: ChumiControllerOptions) {
     const router = new Router<Koa.Context, T>();
 
     this.routes.push(router);
@@ -33,12 +33,26 @@ export default class ChumiRouter<T> {
     this.all = router.all.bind(router);
     this.use = router.use.bind(router);
 
-    controllers.forEach((Controller: any) => {
-      // 注入chumi路由标识
-      router[SymbolRouter] = SymbolRouter;
-      // eslint-disable-next-line no-new
-      new Controller(router, this.prefix.bind(this), this.storeRouteRule.bind(this), options);
-    });
+    if (Array.isArray(controllers)) {
+      controllers.forEach((Controller: any) => {
+        // 注入chumi路由标识
+        router[SymbolRouter] = SymbolRouter;
+        // eslint-disable-next-line no-new
+        new Controller(router, this.prefix.bind(this), this.storeRouteRule.bind(this), options);
+      });
+    } else {
+      for (const prefix in controllers) {
+        controllers[prefix].forEach((Controller: any) => {
+          // 注入chumi路由标识
+          router[SymbolRouter] = SymbolRouter;
+          // eslint-disable-next-line no-new
+          new Controller(router, this.prefix.bind(this), this.storeRouteRule.bind(this), {
+            ...options,
+            prefix: (options.prefix ?? '') + prefix
+          });
+        });
+      }
+    }
   }
 
   private storeRouteRule(routeRule: routeRule) {

@@ -5,7 +5,7 @@ import { Context, Next } from 'koa';
 import koaBody from 'koa-body';
 
 import ChumiRouter from './ChumiRouter';
-import { SwaggerOptions } from './constants';
+import { Ctr, SwaggerOptions } from './constants';
 import Swagger from './Swagger';
 
 export { ALL, loadService } from './constants';
@@ -64,8 +64,23 @@ export interface ChumiOptions<T> {
 
 /**
  * 基于koa的运行时中间件框架
+ *
+ * ```
+ * 参数1: controllers: Ctr[] | Record<prefix, Ctr[]>
+ *  如果指定了prefix，则最终的prefix = 参数2的prefix + 参数1的prefix
+ * 参数2: {}
+ *  koaBody: 指定启动body解析，如果框架内已内置，则不需要配置
+ *  onStart: 当chumi中间件开始时触发
+ *  onError: 仅当chumi中间件业务发生错误时触发
+ *  onSuccess: 仅当chumi中间件业务成功时触发
+ *  onFinish: 当chumi中间件业务完成时触发，不管失败、成功都会触发
+ *  swagger: 开启swagger
+ *  prefix: 当前chumi下所有路由地址的统一前缀
+ *  data
+ *  skip
+ * ```
  */
-export const chumi = <T>(controllers: Object[], options?: ChumiOptions<T & Context>) => {
+export const chumi = <T>(controllers: Ctr, options?: ChumiOptions<T & Context>) => {
   const chumiRouter = new ChumiRouter(controllers, {
     prefix: options?.prefix,
     data: options?.data

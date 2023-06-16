@@ -10,7 +10,8 @@
     "esModuleInterop": true,
     "noEmit": false,
     "declaration": true,
-    "emitDeclarationOnly": true
+    "emitDeclarationOnly": true,
+    "types": ["node", "jest"]
   },
   "files": ["server.d.ts"],
   "include": ["chumi/**/*.ts", "test/**/*.ts"]

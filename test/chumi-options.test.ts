@@ -98,6 +98,52 @@ describe('Chumi Options', () => {
     server2.close();
   });
 
+  test('test prefix in single instance', async () => {
+    const app = new Koa();
+    app.use(
+      chumi(
+        {
+          '/api1': [Sample1],
+          '/api2': [Sample1]
+        },
+        { swagger: {} }
+      )
+    );
+    const server = app.listen();
+    const request = supertest(server);
+
+    const res1 = await request.get('/api1/test1/1').then((res) => res.text);
+    const res2 = await request.get('/api2/test1/2').then((res) => res.text);
+
+    expect(res1).toMatch('/api1/test1/1');
+    expect(res2).toMatch('/api2/test1/2');
+
+    server.close();
+  });
+
+  test('all prefix test prefix in single instance', async () => {
+    const app = new Koa();
+    app.use(
+      chumi(
+        {
+          '/api1': [Sample1],
+          '/api2': [Sample1]
+        },
+        { prefix: '/test', swagger: {} }
+      )
+    );
+    const server = app.listen();
+    const request = supertest(server);
+
+    const res1 = await request.get('/test/api1/test1/1').then((res) => res.text);
+    const res2 = await request.get('/test/api2/test1/2').then((res) => res.text);
+
+    expect(res1).toMatch('/test/api1/test1/1');
+    expect(res2).toMatch('/test/api2/test1/2');
+
+    server.close();
+  });
+
   test('test data', async () => {
     const app = new Koa();
     app.use(chumi([Sample3], { prefix: '/api', data: { a: 2 } }));

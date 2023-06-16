@@ -65,3 +65,5 @@ export type MethodAction = Function & {
     routeOptions: RouteOptions;
   }[];
 };
+
+export type Ctr = Object[] | Record<string, Object[]>;
