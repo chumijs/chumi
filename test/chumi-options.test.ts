@@ -231,6 +231,33 @@ describe('Chumi Options', () => {
     server.close();
   });
 
+  test('test middleware in single instance no next', async () => {
+    const app = new Koa();
+    app.use(
+      chumi(
+        {
+          '/api': [Sample1]
+        },
+        {
+          swagger: {},
+          middlewares: [
+            async (ctx) => {
+              ctx.body = 1;
+            }
+          ]
+        }
+      )
+    );
+    const server = app.listen();
+    const request = supertest(server);
+
+    const res = await request.get('/api/abc').then((res) => res.text);
+
+    expect(res).toMatch('1');
+
+    server.close();
+  });
+
   test('test data', async () => {
     const app = new Koa();
     app.use(chumi([Sample3], { prefix: '/api', data: { a: 2 } }));
