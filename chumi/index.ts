@@ -60,6 +60,9 @@ export interface ChumiOptions<T> {
    * 2. 返回`false`表示不跳过
    */
   skip?: (ctx: T) => Promise<boolean> | boolean;
+  /**
+   * koa中间件数组，承担当前chumi路由的前置处理
+   */
   middlewares?: ((ctx: T, next: Next) => Promise<void>)[];
 }
 
@@ -77,6 +80,7 @@ export interface ChumiOptions<T> {
  *  onFinish: 当chumi中间件业务完成时触发，不管失败、成功都会触发
  *  swagger: 开启swagger
  *  prefix: 当前chumi下所有路由地址的统一前缀
+ *  middlewares: 指定koa中间件数组
  *  data
  *  skip
  * ```
