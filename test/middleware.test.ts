@@ -1,6 +1,6 @@
 import { Server } from 'http';
 import supertest from 'supertest';
-import app from './fixtures/middlware';
+import app from './fixtures/middleware';
 
 describe('Middleware test', () => {
   let server: Server;
