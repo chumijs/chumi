@@ -107,6 +107,7 @@ export const chumi = <T>(controllers: Ctr, options?: ChumiOptions<T & Context>) 
       // chumi入口
       await options?.onStart?.(ctx);
 
+      // 递归执行每个中间件，以达到符合中间件运行的功能逻辑
       const loopMiddlewares = (i: number) => {
         if (i < ml) {
           const middleware = options.middlewares[i];
