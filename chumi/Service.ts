@@ -11,6 +11,17 @@ export default (TargetServiceClass: any): any => {
       const allProperties = Object.getOwnPropertyNames(
         Object.getPrototypeOf(targetServiceInstance)
       );
+      for (const property in targetServiceInstance) {
+        if (targetServiceInstance[property]?.[SymbolServiceName] === SymbolService) {
+          // 支持service链式传递，这里需要异步调用，不是立即获取到的
+          Object.defineProperty(this, property, {
+            get() {
+              return targetServiceInstance[property];
+            }
+          });
+        }
+      }
+
       targetServiceInstance.ctx = ctx;
 
       /**
