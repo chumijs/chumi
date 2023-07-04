@@ -1,3 +1,7 @@
+## 1.1.9
+
+* 通过`loadService`加载的`service`支持链式调用，具体可以查看测试用例代码 `test/fixtures/chain-services`
+  
 ## 1.1.8
 
 * 新增全局的控制器中间件controllerMiddlewares
