@@ -52,6 +52,11 @@ class Ctr {
   async index(@Query('name') name: string, @Query('action') action: string) {
     return this.main?.[name]?.[action]?.() ?? this.main?.[name]?.[action] ?? this.main?.[name];
   }
+
+  @Get('/t')
+  async t() {
+    return this.main.C.D.d();
+  }
 }
 
 const app = new Koa();

@@ -23,5 +23,7 @@ describe('Chain Services test', () => {
     expect(res2).toMatch('');
     const res3 = await request.get('/?name=A&action=b').then((res) => res.text);
     expect(res3).toMatch('');
+    const res4 = await request.get('/t').then((res) => res.text);
+    expect(res4).toMatch('d');
   });
 });
