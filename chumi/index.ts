@@ -8,7 +8,7 @@ import ChumiRouter from './ChumiRouter';
 import { Ctr, SwaggerOptions } from './constants';
 import Swagger from './Swagger';
 
-export { ALL, loadService } from './constants';
+export { ALL, loadService, loadController } from './constants';
 export * from './Methods';
 export * from './Parameters';
 
