@@ -10,12 +10,15 @@ import {
   ALL,
   SymbolService,
   SymbolServiceName,
+  SymbolControllerName,
   SymbolRouter,
   routeRule,
   SymbolApiTags,
   SymbolPut,
   ChumiControllerOptions,
-  MethodAction
+  MethodAction,
+  SymbolController,
+  SymbolControllerInstance
 } from './constants';
 import Router from 'koa-router';
 
@@ -61,7 +64,7 @@ export default (
   routerOptions?: { middlewares: Koa.Middleware[] }
 ): ClassDecorator => {
   return (TargetControllerClass: any): any => {
-    return function Ctr<T>(
+    function Ctr<T>(
       router: InstanceType<typeof ChumiRouter>,
       createPrefixRouter: (prefix: string) => InstanceType<typeof ChumiRouter>,
       storeRouteRule: (rule: routeRule) => void,
@@ -88,7 +91,7 @@ export default (
       );
       const currentRouter = realPrefix ? createPrefixRouter(realPrefix) : router;
 
-      options.middlewares?.forEach((middleware) => {
+      options.controllerMiddlewares?.forEach((middleware) => {
         currentRouter.use(middleware as Koa.Middleware);
       });
 
@@ -169,20 +172,19 @@ export default (
                 ctx.chumi = options.data;
                 const that = Object.assign(targetControllerInstance, { ctx });
 
-                const cacheServiceInstances = {};
-
                 // proxy代理实现
                 const handler = {
                   get: function (target, property) {
                     // 当发现需要调用到service实例时，从缓存中取出实例
                     if (that[property]?.[SymbolServiceName] === SymbolService) {
-                      if (cacheServiceInstances[property]) {
-                        return cacheServiceInstances[property];
-                      }
-                      // 第一次，需要实例化，动态注入当前的ctx
-                      const serviceInstance = new that[property](ctx);
-                      cacheServiceInstances[property] = serviceInstance;
-                      return serviceInstance;
+                      // 每次都需要实例化，动态注入当前的ctx
+                      return new that[property](ctx);
+                    }
+
+                    if (that[property]?.[SymbolControllerName] === SymbolController) {
+                      // 控制器A 调用控制器B，直接单独初始化控制器B即可，当做一个纯的class
+                      // 但是那个的ctx，就要继承当前传的ctx了，这里相当于把那个控制器当做一个延伸
+                      return new that[property][SymbolControllerInstance](ctx, options);
                     }
 
                     return that[property];
@@ -198,6 +200,81 @@ export default (
           });
         }
       });
+    }
+    Ctr[SymbolControllerName] = SymbolController;
+    Ctr[SymbolControllerInstance] = function <T>(ctx: Context, options: ChumiControllerOptions<T>) {
+      // 初始化当前控制器实例
+      const targetControllerInstance = new TargetControllerClass();
+
+      // 获取当前控制器实例的函数属性
+      const allProperties = Object.getOwnPropertyNames(
+        Object.getPrototypeOf(targetControllerInstance)
+      );
+
+      allProperties.forEach((actionName) => {
+        if (actionName !== 'constructor') {
+          const action: MethodAction = targetControllerInstance[actionName];
+          ctx.chumi = options.data;
+          const that = Object.assign(targetControllerInstance, { ctx });
+
+          // proxy代理实现
+          const handler = {
+            get: function (target, property) {
+              // 当发现需要调用到service实例时，从缓存中取出实例
+              if (that[property]?.[SymbolServiceName] === SymbolService) {
+                // 每次都需要实例化，动态注入当前的ctx
+                return new that[property](ctx);
+              }
+
+              if (that[property]?.[SymbolControllerName] === SymbolController) {
+                // 控制器A 调用控制器B，直接单独初始化控制器B即可，当做一个纯的class
+                // 但是那个的ctx，就要继承当前传的ctx了，这里相当于把那个控制器当做一个延伸
+                return new that[property][SymbolControllerInstance](ctx, options);
+              }
+
+              return that[property];
+            }
+          };
+
+          // 递归执行每个中间件，以达到符合中间件运行的功能逻辑
+          const totalMiddlewares: Koa.Middleware[] = [];
+          options.controllerMiddlewares?.forEach((middleware) => {
+            totalMiddlewares.push(middleware as Koa.Middleware);
+          });
+
+          routerOptions?.middlewares?.forEach((middleware) => {
+            totalMiddlewares.push(middleware);
+          });
+
+          const ml = totalMiddlewares.length;
+          const loopMiddlewares = (i: number, data: any[], resolve) => {
+            if (i < ml) {
+              const middleware = totalMiddlewares[i];
+              return async () => {
+                return await middleware(ctx, loopMiddlewares(i + 1, data, resolve));
+              };
+            } else {
+              // 最后加载核心中间件业务
+              return async () => {
+                resolve(await action.apply(new Proxy(that, handler), data));
+              };
+            }
+          };
+
+          this[actionName] = async function (...args: any[]) {
+            return await new Promise<void>(async (resolve, reject) => {
+              try {
+                await loopMiddlewares(0, args, resolve)();
+                resolve();
+              } catch (error) {
+                reject(error);
+              }
+            });
+          };
+        }
+      });
     };
+
+    return Ctr;
   };
 };

@@ -36,6 +36,7 @@ import chumi, {
   Header,
   Files,
   ApiTags,
-  loadService
+  loadService,
+  loadController
 } from 'chumi';
 ```

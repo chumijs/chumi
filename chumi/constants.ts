@@ -10,7 +10,10 @@ export const ALL = Symbol('all');
 export const SymbolRouter = Symbol('chumiRouter');
 
 export const SymbolServiceName = Symbol('serviceName');
+export const SymbolControllerName = Symbol('controllerName');
+export const SymbolControllerInstance = Symbol('controllerInstance');
 export const SymbolService = Symbol('service');
+export const SymbolController = Symbol('controller');
 export const SymbolApiTags = Symbol('controller-api-tags');
 
 export type BaseDataType = StringConstructor | NumberConstructor;
@@ -23,6 +26,12 @@ export interface parameterMap {
 }
 
 export function loadService<T extends abstract new (...args: any) => any>(
+  value: T
+): InstanceType<typeof value> {
+  return value as any;
+}
+
+export function loadController<T extends abstract new (...args: any) => any>(
   value: T
 ): InstanceType<typeof value> {
   return value as any;
@@ -58,7 +67,12 @@ export type middlewares<T> = ((ctx: T, next: Next) => Promise<void>)[];
 export interface ChumiControllerOptions<T> {
   prefix?: string;
   data?: Record<string | number, any>;
-  middlewares?: middlewares<T>;
+  /**
+   * 定义在chumi options上的控制器中间件
+   *
+   * 即通用的控制器中间件
+   */
+  controllerMiddlewares?: middlewares<T>;
 }
 
 export type MethodAction = Function & {
