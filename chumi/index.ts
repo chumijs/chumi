@@ -94,7 +94,7 @@ export const chumi = <T>(controllers: Ctr<T>, options?: ChumiOptions<T & Context
   const chumiRouter = new ChumiRouter<T>(controllers, {
     prefix: options?.prefix,
     data: options?.data,
-    middlewares: options?.controllerMiddlewares
+    controllerMiddlewares: options?.controllerMiddlewares
   });
   const swaggerInstance = options?.swagger
     ? new Swagger(

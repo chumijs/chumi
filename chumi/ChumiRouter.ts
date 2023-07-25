@@ -51,7 +51,7 @@ export default class ChumiRouter<T> {
           ctrs = ctrInfo.controllers;
           middlewares = ctrInfo.middlewares ?? [];
         }
-        options.middlewares = [...(options.middlewares ?? []), ...middlewares];
+        options.controllerMiddlewares = [...(options.controllerMiddlewares ?? []), ...middlewares];
         ctrs.forEach((Controller: any) => {
           // 注入chumi路由标识
           router[SymbolRouter] = SymbolRouter;

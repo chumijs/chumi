@@ -67,7 +67,12 @@ export type middlewares<T> = ((ctx: T, next: Next) => Promise<void>)[];
 export interface ChumiControllerOptions<T> {
   prefix?: string;
   data?: Record<string | number, any>;
-  middlewares?: middlewares<T>;
+  /**
+   * 定义在chumi options上的控制器中间件
+   *
+   * 即通用的控制器中间件
+   */
+  controllerMiddlewares?: middlewares<T>;
 }
 
 export type MethodAction = Function & {

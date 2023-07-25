@@ -91,7 +91,7 @@ export default (
       );
       const currentRouter = realPrefix ? createPrefixRouter(realPrefix) : router;
 
-      options.middlewares?.forEach((middleware) => {
+      options.controllerMiddlewares?.forEach((middleware) => {
         currentRouter.use(middleware as Koa.Middleware);
       });
 
@@ -229,14 +229,48 @@ export default (
               if (that[property]?.[SymbolControllerName] === SymbolController) {
                 // 控制器A 调用控制器B，直接单独初始化控制器B即可，当做一个纯的class
                 // 但是那个的ctx，就要继承当前传的ctx了，这里相当于把那个控制器当做一个延伸
-                return new that[property][SymbolControllerInstance](ctx);
+                return new that[property][SymbolControllerInstance](ctx, options);
               }
 
               return that[property];
             }
           };
 
-          this[actionName] = action.bind(new Proxy(that, handler));
+          // 递归执行每个中间件，以达到符合中间件运行的功能逻辑
+          const totalMiddlewares: Koa.Middleware[] = [];
+          options.controllerMiddlewares?.forEach((middleware) => {
+            totalMiddlewares.push(middleware as Koa.Middleware);
+          });
+
+          routerOptions?.middlewares?.forEach((middleware) => {
+            totalMiddlewares.push(middleware);
+          });
+
+          const ml = totalMiddlewares.length;
+          const loopMiddlewares = (i: number, data: any[], resolve) => {
+            if (i < ml) {
+              const middleware = totalMiddlewares[i];
+              return async () => {
+                return await middleware(ctx, loopMiddlewares(i + 1, data, resolve));
+              };
+            } else {
+              // 最后加载核心中间件业务
+              return async () => {
+                resolve(await action.apply(new Proxy(that, handler), data));
+              };
+            }
+          };
+
+          this[actionName] = async function (...args: any[]) {
+            return await new Promise<void>(async (resolve, reject) => {
+              try {
+                await loopMiddlewares(0, args, resolve)();
+                resolve();
+              } catch (error) {
+                reject(error);
+              }
+            });
+          };
         }
       });
     };
