@@ -39,4 +39,9 @@ describe('Chain Controllers test', () => {
     const res4 = await request.get('/ctr3/to3?name=A').then((res) => res.body);
     expect(res4.name).toBe('A_/ctr3/to3_2_A$$123_123controllerMiddlewares');
   });
+
+  test('ctr3 more', async () => {
+    const res1 = await request.get('/ctr3/to3-more?name=A').then((res) => res.body);
+    expect(res1.name).toBe('A_/ctr3/to3-more_2_A$$123_123controllerMiddlewares');
+  });
 });

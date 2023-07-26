@@ -17,4 +17,13 @@ export default class Ctr3 {
   async indexError(@Query('name') name: string) {
     return await this.ctr2.indexError_(name);
   }
+
+  @Get('/to3-more')
+  async indexMore(@Query('name') name: string) {
+    const c1 = await this.ctr2.indexMore(name);
+    const c2 = await this.ctr2.indexMore(name);
+    const c3 = await this.ctr2.indexMore(name);
+
+    return { name: (await this.ctr2.indexMore(name)).name + this.ctx.def, c1, c2, c3 };
+  }
 }

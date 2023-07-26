@@ -172,19 +172,30 @@ export default (
                 ctx.chumi = options.data;
                 const that = Object.assign(targetControllerInstance, { ctx });
 
+                // 当前函数内，多次调用同一个实例，不需要重复实例化
+                const cacheInstance = {};
+
                 // proxy代理实现
                 const handler = {
                   get: function (target, property) {
+                    if (cacheInstance[property]) {
+                      return cacheInstance[property];
+                    }
+
                     // 当发现需要调用到service实例时，从缓存中取出实例
                     if (that[property]?.[SymbolServiceName] === SymbolService) {
                       // 每次都需要实例化，动态注入当前的ctx
-                      return new that[property](ctx);
+                      const instance = new that[property](ctx);
+                      cacheInstance[property] = instance;
+                      return cacheInstance[property];
                     }
 
                     if (that[property]?.[SymbolControllerName] === SymbolController) {
                       // 控制器A 调用控制器B，直接单独初始化控制器B即可，当做一个纯的class
                       // 但是那个的ctx，就要继承当前传的ctx了，这里相当于把那个控制器当做一个延伸
-                      return new that[property][SymbolControllerInstance](ctx, options);
+                      const instance = new that[property][SymbolControllerInstance](ctx, options);
+                      cacheInstance[property] = instance;
+                      return cacheInstance[property];
                     }
 
                     return that[property];
@@ -211,60 +222,70 @@ export default (
         Object.getPrototypeOf(targetControllerInstance)
       );
 
+      // 递归执行每个中间件，以达到符合中间件运行的功能逻辑
+      const totalMiddlewares: Koa.Middleware[] = [];
+      options.controllerMiddlewares?.forEach((middleware) => {
+        totalMiddlewares.push(middleware as Koa.Middleware);
+      });
+
+      routerOptions?.middlewares?.forEach((middleware) => {
+        totalMiddlewares.push(middleware);
+      });
+
+      const ml = totalMiddlewares.length;
+      const loopMiddlewares = (i: number, actionFun: () => Promise<void>) => {
+        if (i < ml) {
+          const middleware = totalMiddlewares[i];
+          return async () => {
+            return await middleware(ctx, loopMiddlewares(i + 1, actionFun));
+          };
+        } else {
+          // 最后加载核心中间件业务
+          return actionFun;
+        }
+      };
+
       allProperties.forEach((actionName) => {
         if (actionName !== 'constructor') {
           const action: MethodAction = targetControllerInstance[actionName];
           ctx.chumi = options.data;
           const that = Object.assign(targetControllerInstance, { ctx });
 
-          // proxy代理实现
-          const handler = {
-            get: function (target, property) {
-              // 当发现需要调用到service实例时，从缓存中取出实例
-              if (that[property]?.[SymbolServiceName] === SymbolService) {
-                // 每次都需要实例化，动态注入当前的ctx
-                return new that[property](ctx);
-              }
-
-              if (that[property]?.[SymbolControllerName] === SymbolController) {
-                // 控制器A 调用控制器B，直接单独初始化控制器B即可，当做一个纯的class
-                // 但是那个的ctx，就要继承当前传的ctx了，这里相当于把那个控制器当做一个延伸
-                return new that[property][SymbolControllerInstance](ctx, options);
-              }
-
-              return that[property];
-            }
-          };
-
-          // 递归执行每个中间件，以达到符合中间件运行的功能逻辑
-          const totalMiddlewares: Koa.Middleware[] = [];
-          options.controllerMiddlewares?.forEach((middleware) => {
-            totalMiddlewares.push(middleware as Koa.Middleware);
-          });
-
-          routerOptions?.middlewares?.forEach((middleware) => {
-            totalMiddlewares.push(middleware);
-          });
-
-          const ml = totalMiddlewares.length;
-          const loopMiddlewares = (i: number, data: any[], resolve) => {
-            if (i < ml) {
-              const middleware = totalMiddlewares[i];
-              return async () => {
-                return await middleware(ctx, loopMiddlewares(i + 1, data, resolve));
-              };
-            } else {
-              // 最后加载核心中间件业务
-              return async () => {
-                resolve(await action.apply(new Proxy(that, handler), data));
-              };
-            }
-          };
-
           this[actionName] = async function (...args: any[]) {
+            // 当前函数内，多次调用同一个实例，不需要重复实例化
+            const cacheInstance = {};
+
+            // proxy代理实现
+            const handler = {
+              get: function (target, property) {
+                if (cacheInstance[property]) {
+                  return cacheInstance[property];
+                }
+                // 当发现需要调用到service实例时，从缓存中取出实例
+                if (that[property]?.[SymbolServiceName] === SymbolService) {
+                  // 每次都需要实例化，动态注入当前的ctx
+                  const instance = new that[property](ctx);
+                  cacheInstance[property] = instance;
+                  return instance;
+                }
+
+                if (that[property]?.[SymbolControllerName] === SymbolController) {
+                  // 控制器A 调用控制器B，直接单独初始化控制器B即可，当做一个纯的class
+                  // 但是那个的ctx，就要继承当前传的ctx了，这里相当于把那个控制器当做一个延伸
+                  const instance = new that[property][SymbolControllerInstance](ctx, options);
+                  cacheInstance[property] = instance;
+                  return instance;
+                }
+
+                return that[property];
+              }
+            };
+
             return await new Promise<void>(async (resolve, reject) => {
               try {
-                await loopMiddlewares(0, args, resolve)();
+                await loopMiddlewares(0, async () => {
+                  resolve(await action.apply(new Proxy(that, handler), args));
+                })();
                 resolve();
               } catch (error) {
                 reject(error);
