@@ -2,11 +2,13 @@
 
 ## 1.1.11
 
-* 支持通过`loadSerice`和`loadController`
+* 支持通过`loadSerice`和`loadController`，实现星链模型
   
   可以依次链式加载`controller1`、`service1`、`controller2`、`service2`、`service3`、`controller3` 等等
 
   实现了任意扩展，让开发者自由搭配，更好了助力bff业务的处理
+
+* 完成了并发测试，保证了`chumi`的健壮性
 
 
 ## 1.1.10

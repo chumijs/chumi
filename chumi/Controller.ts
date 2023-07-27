@@ -181,8 +181,6 @@ export default (
               }
             }
 
-            console.log(333, routePath);
-
             storeRouteRule({
               method,
               path: swaggerPath,
