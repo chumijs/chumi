@@ -47,7 +47,7 @@ import chumi, {
 
 ```ts
 import Koa, { Context } from 'koa';
-import chumi, { Controller, Get, Service, loadController, loadService } from '../../chumi';
+import chumi, { Controller, Get, Service, loadController, loadService } from 'chumi';
 
 const app = new Koa();
 
