@@ -1,13 +1,11 @@
 import { Context } from 'koa';
-import { Service, loadController, loadService } from '../../../chumi';
+import { Service, loadController } from '../../../chumi';
 import Ctr1 from './ctr1';
-import Service2 from './s2';
 
 @Service
-export default class Service1 {
+export default class Service2 {
   ctx: Context;
   a = 2;
-  s2 = loadService(Service2);
   ctr1 = loadController(Ctr1);
 
   async t1(name: string) {
@@ -19,8 +17,7 @@ export default class Service1 {
   }
 
   async t3(name: string) {
-    const c1 = await this.s2.t3(name);
-    const c2 = await this.s2.t3(name);
-    return { key: this.ctx.path + '_t3_' + name, ...c1, ...c2 };
+    const c1 = await this.ctr1.index(name);
+    return { key: this.ctx.path + '_t3_' + name, ...c1 };
   }
 }

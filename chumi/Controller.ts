@@ -80,7 +80,20 @@ export default (
         return;
       }
 
-      const realPrefix = (options.prefix ?? '') + (prefix ?? '');
+      // 移除多余斜杠
+      let routePrefix = ((options.prefix ?? '') + (prefix ?? ''))
+        .split('/')
+        .filter((item) => item !== '')
+        .join('/');
+
+      /**
+       * / 移除
+       * /a => /a
+       */
+      if (routePrefix) {
+        // 如果当前存在前缀，则添加斜杠，否则不添加
+        routePrefix = '/' + routePrefix;
+      }
 
       // 初始化当前控制器实例
       const targetControllerInstance = new TargetControllerClass();
@@ -89,7 +102,7 @@ export default (
       const allProperties = Object.getOwnPropertyNames(
         Object.getPrototypeOf(targetControllerInstance)
       );
-      const currentRouter = realPrefix ? createPrefixRouter(realPrefix) : router;
+      const currentRouter = routePrefix ? createPrefixRouter(routePrefix) : router;
 
       options.controllerMiddlewares?.forEach((middleware) => {
         currentRouter.use(middleware as Koa.Middleware);
@@ -146,16 +159,38 @@ export default (
               parameterMap = targetControllerInstance[SymbolParameter][actionName];
             }
 
+            let routePath = routeInfo.routePath;
+            let swaggerPath = routePrefix;
+
+            // 针对路由定义，需要处理正则情况
+            if (routeInfo.routePath instanceof RegExp) {
+              swaggerPath = swaggerPath + routeInfo.routePath.toString();
+            } else {
+              if (typeof routeInfo.routePath === 'string') {
+                routePath = routeInfo.routePath
+                  .split('/')
+                  .filter((item) => item !== '')
+                  .join('/');
+                if (/^\//.test(routeInfo.routePath)) {
+                  // 以斜杠开头，都要加上斜杠
+                  routePath = '/' + routePath;
+                }
+                swaggerPath = routePrefix + routePath;
+              } else {
+                throw new Error(`${routeInfo.routePath} is an invalid routing address definition`);
+              }
+            }
+
             storeRouteRule({
               method,
-              path: (realPrefix || '') + routeInfo.routePath,
+              path: swaggerPath,
               parameterMap,
               routeOptions: routeInfo.routeOptions,
               tags: Ctr[SymbolApiTags] ?? []
             });
 
             routeAction(
-              routeInfo.routePath,
+              routePath,
               /**
                * 处理路由中间件业务
                */
@@ -172,19 +207,30 @@ export default (
                 ctx.chumi = options.data;
                 const that = Object.assign(targetControllerInstance, { ctx });
 
+                // 当前函数内，多次调用同一个实例，不需要重复实例化
+                const cacheInstances = {};
+
                 // proxy代理实现
                 const handler = {
                   get: function (target, property) {
+                    if (cacheInstances[property]) {
+                      return cacheInstances[property];
+                    }
+
                     // 当发现需要调用到service实例时，从缓存中取出实例
                     if (that[property]?.[SymbolServiceName] === SymbolService) {
                       // 每次都需要实例化，动态注入当前的ctx
-                      return new that[property](ctx);
+                      const instance = new that[property](ctx, options);
+                      cacheInstances[property] = instance;
+                      return cacheInstances[property];
                     }
 
                     if (that[property]?.[SymbolControllerName] === SymbolController) {
                       // 控制器A 调用控制器B，直接单独初始化控制器B即可，当做一个纯的class
                       // 但是那个的ctx，就要继承当前传的ctx了，这里相当于把那个控制器当做一个延伸
-                      return new that[property][SymbolControllerInstance](ctx, options);
+                      const instance = new that[property][SymbolControllerInstance](ctx, options);
+                      cacheInstances[property] = instance;
+                      return cacheInstances[property];
                     }
 
                     return that[property];
@@ -211,60 +257,70 @@ export default (
         Object.getPrototypeOf(targetControllerInstance)
       );
 
+      // 递归执行每个中间件，以达到符合中间件运行的功能逻辑
+      const totalMiddlewares: Koa.Middleware[] = [];
+      options.controllerMiddlewares?.forEach((middleware) => {
+        totalMiddlewares.push(middleware as Koa.Middleware);
+      });
+
+      routerOptions?.middlewares?.forEach((middleware) => {
+        totalMiddlewares.push(middleware);
+      });
+
+      const ml = totalMiddlewares.length;
+      const loopMiddlewares = (i: number, actionFun: () => Promise<void>) => {
+        if (i < ml) {
+          const middleware = totalMiddlewares[i];
+          return async () => {
+            return await middleware(ctx, loopMiddlewares(i + 1, actionFun));
+          };
+        } else {
+          // 最后加载核心中间件业务
+          return actionFun;
+        }
+      };
+
       allProperties.forEach((actionName) => {
         if (actionName !== 'constructor') {
           const action: MethodAction = targetControllerInstance[actionName];
           ctx.chumi = options.data;
           const that = Object.assign(targetControllerInstance, { ctx });
 
-          // proxy代理实现
-          const handler = {
-            get: function (target, property) {
-              // 当发现需要调用到service实例时，从缓存中取出实例
-              if (that[property]?.[SymbolServiceName] === SymbolService) {
-                // 每次都需要实例化，动态注入当前的ctx
-                return new that[property](ctx);
-              }
-
-              if (that[property]?.[SymbolControllerName] === SymbolController) {
-                // 控制器A 调用控制器B，直接单独初始化控制器B即可，当做一个纯的class
-                // 但是那个的ctx，就要继承当前传的ctx了，这里相当于把那个控制器当做一个延伸
-                return new that[property][SymbolControllerInstance](ctx, options);
-              }
-
-              return that[property];
-            }
-          };
-
-          // 递归执行每个中间件，以达到符合中间件运行的功能逻辑
-          const totalMiddlewares: Koa.Middleware[] = [];
-          options.controllerMiddlewares?.forEach((middleware) => {
-            totalMiddlewares.push(middleware as Koa.Middleware);
-          });
-
-          routerOptions?.middlewares?.forEach((middleware) => {
-            totalMiddlewares.push(middleware);
-          });
-
-          const ml = totalMiddlewares.length;
-          const loopMiddlewares = (i: number, data: any[], resolve) => {
-            if (i < ml) {
-              const middleware = totalMiddlewares[i];
-              return async () => {
-                return await middleware(ctx, loopMiddlewares(i + 1, data, resolve));
-              };
-            } else {
-              // 最后加载核心中间件业务
-              return async () => {
-                resolve(await action.apply(new Proxy(that, handler), data));
-              };
-            }
-          };
-
           this[actionName] = async function (...args: any[]) {
+            // 当前函数内，多次调用同一个实例，不需要重复实例化
+            const cacheInstances = {};
+
+            // proxy代理实现
+            const handler = {
+              get: function (target, property) {
+                if (cacheInstances[property]) {
+                  return cacheInstances[property];
+                }
+                // 当发现需要调用到service实例时，从缓存中取出实例
+                if (that[property]?.[SymbolServiceName] === SymbolService) {
+                  // 每次都需要实例化，动态注入当前的ctx
+                  const instance = new that[property](ctx, options);
+                  cacheInstances[property] = instance;
+                  return instance;
+                }
+
+                if (that[property]?.[SymbolControllerName] === SymbolController) {
+                  // 控制器A 调用控制器B，直接单独初始化控制器B即可，当做一个纯的class
+                  // 但是那个的ctx，就要继承当前传的ctx了，这里相当于把那个控制器当做一个延伸
+                  const instance = new that[property][SymbolControllerInstance](ctx, options);
+                  cacheInstances[property] = instance;
+                  return instance;
+                }
+
+                return that[property];
+              }
+            };
+
             return await new Promise<void>(async (resolve, reject) => {
               try {
-                await loopMiddlewares(0, args, resolve)();
+                await loopMiddlewares(0, async () => {
+                  resolve(await action.apply(new Proxy(that, handler), args));
+                })();
                 resolve();
               } catch (error) {
                 reject(error);

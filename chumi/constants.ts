@@ -25,12 +25,22 @@ export interface parameterMap {
   dataType: BaseDataType;
 }
 
+/**
+ * 加载装饰了Service的类
+ *
+ * 支持链式加载，即service1 加载 service2，service2 里面加载 service3
+ */
 export function loadService<T extends abstract new (...args: any) => any>(
   value: T
 ): InstanceType<typeof value> {
   return value as any;
 }
-
+/**
+ * 加载装饰了Controller的类
+ *
+ * 支持链式加载，即Ctr1 加载 Ctr2，Ctr2 里面加载 Ctr3
+ *
+ */
 export function loadController<T extends abstract new (...args: any) => any>(
   value: T
 ): InstanceType<typeof value> {

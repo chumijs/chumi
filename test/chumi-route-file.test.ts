@@ -44,7 +44,7 @@ describe('files', () => {
         .set('Content-Type', 'multipart/form-data')
         .field('test', 'uploadFile')
         .attach('file', path.join(__dirname, './fixtures/normal/home.ts'))
-        .attach('file', path.join(__dirname, './fixtures/small/index.ts'))
+        .attach('file', path.join(__dirname, './fixtures/simple/index.ts'))
         .then((res) => res.text);
       expect(res).toBe(`home.ts,index.ts`);
       done();
@@ -75,7 +75,7 @@ describe('files', () => {
         .set('Content-Type', 'multipart/form-data')
         .field('test', 'uploadFile')
         .attach('file1', path.join(__dirname, './fixtures/normal/home.ts'))
-        .attach('file2', path.join(__dirname, './fixtures/small/index.ts'))
+        .attach('file2', path.join(__dirname, './fixtures/simple/index.ts'))
         .then((res) => res.text);
       expect(res).toBe(`home.ts,index.ts,uploadFile`);
       done();
