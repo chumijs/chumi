@@ -6,6 +6,7 @@ const app = new Koa();
 @Controller()
 class Ctr3 {
   ctx: Context;
+  home = loadController(Home);
   a() {
     return this.ctx.path;
   }
@@ -34,19 +35,25 @@ class S2 {
 @Service
 class S1 {
   S2 = loadService(S2);
+  home = loadController(Home);
 }
 
 @Controller()
 class Home {
   S1 = loadService(S1);
+  ctx: Context;
+
+  async res() {
+    return this.ctx.path;
+  }
 
   @Get('/:id')
   async index() {
-    return this.S1.S2.Ctr1.Ctr2.S3.Ctr3.a();
+    return this.S1.S2.Ctr1.Ctr2.S3.Ctr3.home.res();
   }
 }
 
-// Home -> S1 -> S2 -> Ctr1 -> Ctr2 -> S3 -> Ctr3
+// Home -> S1 -> S2 -> Ctr1 -> Ctr2 -> S3 -> Ctr3 -> Home.res
 app.use(chumi([Home]));
 
 export default app;

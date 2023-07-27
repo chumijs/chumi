@@ -18,6 +18,7 @@ export default class Service2 {
 
   async t3(name: string) {
     const c1 = await this.ctr1.index(name);
+    console.log('s2>>>t3', c1, this.ctr1);
     return { key: this.ctx.path + '_t3_' + name, ...c1 };
   }
 }

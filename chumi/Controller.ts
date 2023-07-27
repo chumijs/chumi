@@ -228,7 +228,7 @@ export default (
                       // 每次都需要实例化，动态注入当前的ctx
                       const instance = new that[property](ctx, options, cacheInstances);
                       cacheInstances[uniqueProperty] = instance;
-                      console.log('instance test>>>>', property);
+                      // console.log('instance test>>>>', property);
                       return cacheInstances[uniqueProperty];
                     }
 
@@ -241,7 +241,7 @@ export default (
                         cacheInstances
                       );
                       cacheInstances[uniqueProperty] = instance;
-                      console.log('instance test>>>>', property);
+                      // console.log('instance test>>>>', property);
                       return cacheInstances[uniqueProperty];
                     }
 
@@ -316,48 +316,46 @@ export default (
         }
       }
 
-      Object.assign(
-        targetControllerInstance,
-        new Proxy(targetControllerInstance, {
-          get: function (_target, property) {
-            const uniqueProperty = typeof property === 'string' ? `${uniqueTag}_${property}` : '';
+      targetControllerInstance.ctx = ctx;
 
-            if (cacheInstances[uniqueProperty]) {
-              return cacheInstances[uniqueProperty];
-            }
-            if (
-              typeof targetControllerInstance[property] === 'function' &&
-              targetControllerInstance[property][SymbolServiceName] === SymbolService
-            ) {
-              console.log('instance test>>>>', property);
-              cacheInstances[uniqueProperty] = new targetControllerInstance[property](
-                ctx,
-                options,
-                cacheInstances
-              );
-              return cacheInstances[uniqueProperty];
-            }
+      const that = new Proxy(targetControllerInstance, {
+        get: function (_target, property) {
+          const uniqueProperty = typeof property === 'string' ? `${uniqueTag}_${property}` : '';
 
-            if (
-              typeof targetControllerInstance[property] === 'function' &&
-              targetControllerInstance[property][SymbolControllerName] === SymbolController
-            ) {
-              console.log('instance test>>>>', property);
-              cacheInstances[uniqueProperty] = new targetControllerInstance[property][
-                SymbolControllerInstance
-              ](ctx, options, cacheInstances);
-              return cacheInstances[uniqueProperty];
-            }
-            return targetControllerInstance[property];
+          if (cacheInstances[uniqueProperty]) {
+            return cacheInstances[uniqueProperty];
           }
-        })
-      );
+          if (
+            typeof targetControllerInstance[property] === 'function' &&
+            targetControllerInstance[property][SymbolServiceName] === SymbolService
+          ) {
+            // console.log('instance test>>>>', property);
+            cacheInstances[uniqueProperty] = new targetControllerInstance[property](
+              ctx,
+              options,
+              cacheInstances
+            );
+            return cacheInstances[uniqueProperty];
+          }
+
+          if (
+            typeof targetControllerInstance[property] === 'function' &&
+            targetControllerInstance[property][SymbolControllerName] === SymbolController
+          ) {
+            // console.log('instance test>>>>', property);
+            cacheInstances[uniqueProperty] = new targetControllerInstance[property][
+              SymbolControllerInstance
+            ](ctx, options, cacheInstances);
+            return cacheInstances[uniqueProperty];
+          }
+          return targetControllerInstance[property];
+        }
+      });
 
       allProperties.forEach((actionName) => {
         if (actionName !== 'constructor') {
           ctx.chumi = options.data;
           const action: MethodAction = targetControllerInstance[actionName];
-          const that = Object.assign(targetControllerInstance, { ctx });
 
           this[actionName] = async function (...args: any[]) {
             // 当前函数内，多次调用同一个实例，不需要重复实例化
@@ -375,6 +373,8 @@ export default (
           };
         }
       });
+
+      return that;
     };
     Ctr[SymbolControllerUniqueTag] = uniqueTag;
 

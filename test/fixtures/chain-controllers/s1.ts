@@ -11,6 +11,7 @@ export default class Service1 {
   ctr1 = loadController(Ctr1);
 
   async t1(name: string) {
+    console.log('findddd');
     return this.ctx.path + '_' + this.a + '_' + name + '$$' + this.ctx.abc;
   }
 
@@ -21,6 +22,7 @@ export default class Service1 {
   async t3(name: string) {
     const c1 = await this.s2.t3(name);
     const c2 = await this.s2.t3(name);
+    console.log('c1', c1);
     return { key: this.ctx.path + '_t3_' + name, ...c1, ...c2 };
   }
 }
