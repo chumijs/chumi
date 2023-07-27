@@ -21,7 +21,6 @@ export default class Ctr1 {
   // 通用能力
   @Get('/to1')
   async index(@Query('name') name: string) {
-    console.log(3333, this.s1, name, this.ctx.abc);
     return { name: `${name}_${await this.s1.t1(name)}_${this.ctx.abc}` };
   }
 

@@ -215,34 +215,25 @@ export default (
                 // proxy代理实现，所有实例，梦开始的地方
                 const handler = {
                   get: function (_target, property) {
-                    const uniqueProperty =
-                      typeof property === 'string' ? `${uniqueTag}_${property}` : '';
-
                     // 这里的缓存，是调用开始的地方，这里不能移除，其他地方的实例化就不需要缓存了
-                    if (cacheInstances[uniqueProperty]) {
-                      return cacheInstances[uniqueProperty];
+                    if (cacheInstances[property]) {
+                      return cacheInstances[property];
                     }
 
                     // 当发现需要调用到service实例时，从缓存中取出实例
                     if (that[property]?.[SymbolServiceName] === SymbolService) {
                       // 每次都需要实例化，动态注入当前的ctx
-                      const instance = new that[property](ctx, options, cacheInstances);
-                      cacheInstances[uniqueProperty] = instance;
-                      // console.log('instance test>>>>', property);
-                      return cacheInstances[uniqueProperty];
+                      const instance = new that[property](ctx, options);
+                      cacheInstances[property] = instance;
+                      return cacheInstances[property];
                     }
 
                     if (that[property]?.[SymbolControllerName] === SymbolController) {
                       // 控制器A 调用控制器B，直接单独初始化控制器B即可，当做一个纯的class
                       // 但是那个的ctx，就要继承当前传的ctx了，这里相当于把那个控制器当做一个延伸
-                      const instance = new that[property][SymbolControllerInstance](
-                        ctx,
-                        options,
-                        cacheInstances
-                      );
-                      cacheInstances[uniqueProperty] = instance;
-                      // console.log('instance test>>>>', property);
-                      return cacheInstances[uniqueProperty];
+                      const instance = new that[property][SymbolControllerInstance](ctx, options);
+                      cacheInstances[property] = instance;
+                      return cacheInstances[property];
                     }
 
                     return that[property];
@@ -260,11 +251,7 @@ export default (
       });
     }
     Ctr[SymbolControllerName] = SymbolController;
-    Ctr[SymbolControllerInstance] = function <T>(
-      ctx: Context,
-      options: ChumiControllerOptions<T>,
-      cacheInstances: {}
-    ) {
+    Ctr[SymbolControllerInstance] = function <T>(ctx: Context, options: ChumiControllerOptions<T>) {
       // 初始化当前控制器实例
       const targetControllerInstance = new TargetControllerClass();
 
@@ -296,46 +283,21 @@ export default (
         }
       };
 
-      // 基础链式调用，未执行到具体函数，要支持继续链下去
-      for (const property in targetControllerInstance) {
-        if (targetControllerInstance[property]?.[SymbolServiceName] === SymbolService) {
-          // 支持service链式传递，这里需要异步调用，不是立即获取到的
-          Object.defineProperty(this, property, {
-            get() {
-              return targetControllerInstance[property];
-            }
-          });
-        }
-        if (targetControllerInstance[property]?.[SymbolControllerName] === SymbolController) {
-          // 支持service 里面的controller链式传递，这里需要异步调用，不是立即获取到的
-          Object.defineProperty(this, property, {
-            get() {
-              return targetControllerInstance[property];
-            }
-          });
-        }
-      }
-
       targetControllerInstance.ctx = ctx;
 
+      const cacheInstances = {};
       const that = new Proxy(targetControllerInstance, {
         get: function (_target, property) {
-          const uniqueProperty = typeof property === 'string' ? `${uniqueTag}_${property}` : '';
-
-          if (cacheInstances[uniqueProperty]) {
-            return cacheInstances[uniqueProperty];
+          if (cacheInstances[property]) {
+            return cacheInstances[property];
           }
           if (
             typeof targetControllerInstance[property] === 'function' &&
             targetControllerInstance[property][SymbolServiceName] === SymbolService
           ) {
             // console.log('instance test>>>>', property);
-            cacheInstances[uniqueProperty] = new targetControllerInstance[property](
-              ctx,
-              options,
-              cacheInstances
-            );
-            return cacheInstances[uniqueProperty];
+            cacheInstances[property] = new targetControllerInstance[property](ctx, options);
+            return cacheInstances[property];
           }
 
           if (
@@ -343,10 +305,10 @@ export default (
             targetControllerInstance[property][SymbolControllerName] === SymbolController
           ) {
             // console.log('instance test>>>>', property);
-            cacheInstances[uniqueProperty] = new targetControllerInstance[property][
+            cacheInstances[property] = new targetControllerInstance[property][
               SymbolControllerInstance
-            ](ctx, options, cacheInstances);
-            return cacheInstances[uniqueProperty];
+            ](ctx, options);
+            return cacheInstances[property];
           }
           return targetControllerInstance[property];
         }
@@ -357,7 +319,7 @@ export default (
           ctx.chumi = options.data;
           const action: MethodAction = targetControllerInstance[actionName];
 
-          this[actionName] = async function (...args: any[]) {
+          that[actionName] = async function (...args: any[]) {
             // 当前函数内，多次调用同一个实例，不需要重复实例化
             // const cacheInstances = {};
             return await new Promise<void>(async (resolve, reject) => {

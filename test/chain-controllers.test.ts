@@ -45,7 +45,7 @@ describe('Chain Controllers test', () => {
     expect(res1.name).toBe('A_/ctr3/to3-more_2_A$$123_123controllerMiddlewares');
   });
 
-  test.only('ctr3 -> ctr2 -> s1 -> ctr1', async () => {
+  test('ctr3 -> ctr2 -> s1 -> ctr1', async () => {
     const res1 = await request.get('/ctr3/to3-ctr2-s1-ctr1?name=A').then((res) => res.body);
     expect(res1.s1.name).toBe(res1.s2.name);
     expect(res1.s1.key).toBe(res1.s3.key);

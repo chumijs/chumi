@@ -27,4 +27,10 @@ describe('Chain test', () => {
     );
     expect(data.filter((item) => !item).length).toBe(0);
   });
+
+  test('perfect chain', async () => {
+    // 测试正常 控制器调用控制器
+    const res = await request.get(`/chain/perfect`).then((res) => res.text);
+    expect(res).toBe('/chain/perfect');
+  });
 });

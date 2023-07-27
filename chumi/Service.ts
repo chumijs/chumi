@@ -14,42 +14,23 @@ export default (TargetServiceClass: any): any => {
   class Service<T> {
     ctx: Context;
 
-    constructor(ctx: Context, options: ChumiControllerOptions<T>, cacheInstances = {}) {
+    constructor(ctx: Context, options: ChumiControllerOptions<T>) {
       this.ctx = ctx;
       const targetServiceInstance = new TargetServiceClass();
       const allProperties = Object.getOwnPropertyNames(
         Object.getPrototypeOf(targetServiceInstance)
       );
-      for (const property in targetServiceInstance) {
-        if (targetServiceInstance[property]?.[SymbolServiceName] === SymbolService) {
-          // 支持service链式传递，这里需要异步调用，不是立即获取到的
-          Object.defineProperty(this, property, {
-            get() {
-              return targetServiceInstance[property];
-            }
-          });
-        }
-        if (targetServiceInstance[property]?.[SymbolControllerName] === SymbolController) {
-          // 支持service 里面的controller链式传递，这里需要异步调用，不是立即获取到的
-          Object.defineProperty(this, property, {
-            get() {
-              return targetServiceInstance[property];
-            }
-          });
-        }
-      }
 
       targetServiceInstance.ctx = ctx;
 
+      const cacheInstances = {};
       /**
        * proxy监听，当使用时，才会动态实例化引用的service实例
        */
       const that = new Proxy(targetServiceInstance, {
         get: function (_target, property) {
-          const uniqueProperty = typeof property === 'string' ? `${uniqueTag}_${property}` : '';
-
-          if (cacheInstances[uniqueProperty]) {
-            return cacheInstances[uniqueProperty];
+          if (cacheInstances[property]) {
+            return cacheInstances[property];
           }
 
           /**
@@ -63,12 +44,8 @@ export default (TargetServiceClass: any): any => {
           ) {
             // console.log('instance test>>>>', property);
             // 每次上下文都需要实例化，动态注入当前的ctx，当前上下文执行重复时，将不需要实例化了
-            cacheInstances[uniqueProperty] = new targetServiceInstance[property](
-              ctx,
-              options,
-              cacheInstances
-            );
-            return cacheInstances[uniqueProperty];
+            cacheInstances[property] = new targetServiceInstance[property](ctx, options);
+            return cacheInstances[property];
           }
 
           if (
@@ -79,10 +56,10 @@ export default (TargetServiceClass: any): any => {
             // 但是那个的ctx，就要继承当前传的ctx了，这里相当于把那个控制器当做一个延伸
             // console.log('instance test>>>>', property);
 
-            cacheInstances[uniqueProperty] = new targetServiceInstance[property][
+            cacheInstances[property] = new targetServiceInstance[property][
               SymbolControllerInstance
-            ](ctx, options, cacheInstances);
-            return cacheInstances[uniqueProperty];
+            ](ctx, options);
+            return cacheInstances[property];
           }
           return targetServiceInstance[property];
         }
@@ -94,9 +71,7 @@ export default (TargetServiceClass: any): any => {
           /**
            * 对其他函数进行重新显式绑定
            */
-          Object.assign(this, {
-            [actionName]: targetServiceInstance[actionName].bind(that)
-          });
+          that[actionName] = targetServiceInstance[actionName].bind(that);
         }
       });
 

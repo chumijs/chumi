@@ -35,6 +35,7 @@ class S2 {
 @Service
 class S1 {
   S2 = loadService(S2);
+  S1 = loadService(S1);
   home = loadController(Home);
 }
 
@@ -42,6 +43,7 @@ class S1 {
 class Home {
   S1 = loadService(S1);
   ctx: Context;
+  home = loadController(Home);
 
   async res() {
     return this.ctx.path;
@@ -50,6 +52,11 @@ class Home {
   @Get('/:id')
   async index() {
     return this.S1.S2.Ctr1.Ctr2.S3.Ctr3.home.res();
+  }
+
+  @Get('/chain/perfect')
+  async chain() {
+    return this.home.home.S1.S1.home.home.S1.S1.home.home.S1.S1.home.home.res();
   }
 }
 
