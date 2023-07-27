@@ -18,7 +18,8 @@ import {
   ChumiControllerOptions,
   MethodAction,
   SymbolController,
-  SymbolControllerInstance
+  SymbolControllerInstance,
+  SymbolControllerUniqueTag
 } from './constants';
 import Router from 'koa-router';
 
@@ -64,6 +65,7 @@ export default (
   routerOptions?: { middlewares: Koa.Middleware[] }
 ): ClassDecorator => {
   return (TargetControllerClass: any): any => {
+    const uniqueTag = `##Controller_${Math.random()}##`;
     function Ctr<T>(
       router: InstanceType<typeof ChumiRouter>,
       createPrefixRouter: (prefix: string) => InstanceType<typeof ChumiRouter>,
@@ -210,9 +212,10 @@ export default (
                 // 当前函数内，多次调用同一个实例，不需要重复实例化
                 const cacheInstances = {};
 
-                // proxy代理实现
+                // proxy代理实现，所有实例，梦开始的地方
                 const handler = {
-                  get: function (target, property) {
+                  get: function (_target, property) {
+                    // 这里的缓存，是调用开始的地方，这里不能移除，其他地方的实例化就不需要缓存了
                     if (cacheInstances[property]) {
                       return cacheInstances[property];
                     }
@@ -280,46 +283,49 @@ export default (
         }
       };
 
+      targetControllerInstance.ctx = ctx;
+
+      const cacheInstances = {};
+      const that = new Proxy(targetControllerInstance, {
+        get: function (_target, property) {
+          if (cacheInstances[property]) {
+            return cacheInstances[property];
+          }
+          if (
+            typeof targetControllerInstance[property] === 'function' &&
+            targetControllerInstance[property][SymbolServiceName] === SymbolService
+          ) {
+            // console.log('instance test>>>>', property);
+            cacheInstances[property] = new targetControllerInstance[property](ctx, options);
+            return cacheInstances[property];
+          }
+
+          if (
+            typeof targetControllerInstance[property] === 'function' &&
+            targetControllerInstance[property][SymbolControllerName] === SymbolController
+          ) {
+            // console.log('instance test>>>>', property);
+            cacheInstances[property] = new targetControllerInstance[property][
+              SymbolControllerInstance
+            ](ctx, options);
+            return cacheInstances[property];
+          }
+          return targetControllerInstance[property];
+        }
+      });
+
       allProperties.forEach((actionName) => {
         if (actionName !== 'constructor') {
-          const action: MethodAction = targetControllerInstance[actionName];
           ctx.chumi = options.data;
-          const that = Object.assign(targetControllerInstance, { ctx });
+          const action: MethodAction = targetControllerInstance[actionName];
 
-          this[actionName] = async function (...args: any[]) {
+          that[actionName] = async function (...args: any[]) {
             // 当前函数内，多次调用同一个实例，不需要重复实例化
-            const cacheInstances = {};
-
-            // proxy代理实现
-            const handler = {
-              get: function (target, property) {
-                if (cacheInstances[property]) {
-                  return cacheInstances[property];
-                }
-                // 当发现需要调用到service实例时，从缓存中取出实例
-                if (that[property]?.[SymbolServiceName] === SymbolService) {
-                  // 每次都需要实例化，动态注入当前的ctx
-                  const instance = new that[property](ctx, options);
-                  cacheInstances[property] = instance;
-                  return instance;
-                }
-
-                if (that[property]?.[SymbolControllerName] === SymbolController) {
-                  // 控制器A 调用控制器B，直接单独初始化控制器B即可，当做一个纯的class
-                  // 但是那个的ctx，就要继承当前传的ctx了，这里相当于把那个控制器当做一个延伸
-                  const instance = new that[property][SymbolControllerInstance](ctx, options);
-                  cacheInstances[property] = instance;
-                  return instance;
-                }
-
-                return that[property];
-              }
-            };
-
+            // const cacheInstances = {};
             return await new Promise<void>(async (resolve, reject) => {
               try {
                 await loopMiddlewares(0, async () => {
-                  resolve(await action.apply(new Proxy(that, handler), args));
+                  resolve(await action.apply(that, args));
                 })();
                 resolve();
               } catch (error) {
@@ -329,7 +335,10 @@ export default (
           };
         }
       });
+
+      return that;
     };
+    Ctr[SymbolControllerUniqueTag] = uniqueTag;
 
     return Ctr;
   };

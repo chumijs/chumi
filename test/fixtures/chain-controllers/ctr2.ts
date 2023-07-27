@@ -40,7 +40,6 @@ export default class Ctr2 {
     const s1 = await this.s1.t3(name);
     const s2 = await this.s1.t3(name);
     const s3 = await this.s1.t3(name);
-
     return { s1, s2, s3 };
   }
 }

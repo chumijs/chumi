@@ -1,5 +1,27 @@
 # 更新日志 · 测试覆盖率100% [![coverage](https://img.shields.io/codecov/c/github/chumijs/chumi/master.svg)](https://app.codecov.io/gh/chumijs/chumi/tree/master) · 功能稳定保障
 
+## 1.1.12
+
+* 完美的链式调用模式，星链 [`test/chain.test.ts`](test/chain.test.ts)
+
+  ```js
+  @Controller()
+  class Chain {    
+    ctx: Context;
+    chain = loadController(Chain);
+
+    async res() {
+      return this.ctx.path;
+    }
+
+    @Get('/')
+    async chain() {
+      // 支持无限调用下去，不管是在service，还是controller，都是支持的
+      return this.chain.chain.chain.chain.chain.chain.chain.res();
+    }
+  }
+  ```
+
 ## 1.1.11
 
 * 支持通过`loadService`和`loadController`，实现星链模型
