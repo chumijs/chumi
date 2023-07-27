@@ -2,7 +2,7 @@
 
 ## 1.1.11
 
-* 支持通过`loadSerice`和`loadController`，实现星链模型
+* 支持通过`loadService`和`loadController`，实现星链模型
   
   可以依次链式加载`controller1`、`service1`、`controller2`、`service2`、`service3`、`controller3` 等等
 
