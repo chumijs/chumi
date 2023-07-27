@@ -9,6 +9,11 @@ class Home {
   async index() {
     return 'hello world';
   }
+
+  @Get(2 as any)
+  async t() {
+    return '3';
+  }
 }
 
 app.use(chumi([Home]));

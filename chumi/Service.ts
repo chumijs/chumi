@@ -1,11 +1,18 @@
 import { Context } from 'koa';
-import { SymbolService, SymbolServiceName } from './constants';
+import {
+  ChumiControllerOptions,
+  SymbolController,
+  SymbolControllerInstance,
+  SymbolControllerName,
+  SymbolService,
+  SymbolServiceName
+} from './constants';
 
 export default (TargetServiceClass: any): any => {
-  class Service {
+  class Service<T> {
     ctx: Context;
 
-    constructor(ctx: Context) {
+    constructor(ctx: Context, options: ChumiControllerOptions<T>) {
       this.ctx = ctx;
       const targetServiceInstance = new TargetServiceClass();
       const allProperties = Object.getOwnPropertyNames(
@@ -27,11 +34,10 @@ export default (TargetServiceClass: any): any => {
       /**
        * proxy监听，当使用时，才会动态实例化引用的service实例
        */
-      const cacheServiceInstances = {};
       Object.assign(
         targetServiceInstance,
         new Proxy(targetServiceInstance, {
-          get: function (target, property) {
+          get: function (_target, property) {
             /**
              * 只有调用到当前使用的service，会进行动态实例化
              * 主要针对：当前service实例里面，引用其他service的情况，进行动态实例化
@@ -42,15 +48,23 @@ export default (TargetServiceClass: any): any => {
               targetServiceInstance[property][SymbolServiceName] === SymbolService
             ) {
               // 每次上下文都需要实例化，动态注入当前的ctx，当前上下文执行重复时，将不需要实例化了
-              const serviceInstance = new targetServiceInstance[property](ctx);
-              cacheServiceInstances[property] = serviceInstance;
-              return serviceInstance;
+              return new targetServiceInstance[property](ctx, options);
+            }
+
+            if (
+              typeof targetServiceInstance[property] === 'function' &&
+              targetServiceInstance[property][SymbolControllerName] === SymbolController
+            ) {
+              // 控制器A 调用控制器B，直接单独初始化控制器B即可，当做一个纯的class
+              // 但是那个的ctx，就要继承当前传的ctx了，这里相当于把那个控制器当做一个延伸
+              return new targetServiceInstance[property][SymbolControllerInstance](ctx, options);
             }
             return targetServiceInstance[property];
           }
         })
       );
 
+      // 控制器一路初始化完毕
       allProperties.forEach((actionName) => {
         if (actionName !== 'constructor') {
           /**

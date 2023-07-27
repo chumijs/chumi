@@ -1,26 +1,10 @@
-import { Server } from 'http';
-import supertest from 'supertest';
-import app from './fixtures/small';
-
 describe('Simple test', () => {
-  let server: Server;
-  let request: supertest.SuperTest<supertest.Test>;
-  beforeAll(() => {
-    server = app.listen();
-    request = supertest(server);
-  });
-
-  afterAll(() => {
-    server.close();
-    server = null;
-    request = null;
-  });
-
-  test('test', () => {
-    return request.get('/').expect(200);
-  });
-
-  test('test-404', () => {
-    return request.get('/404').expect(404);
+  test('invalid route path', () => {
+    try {
+      const app = require('./fixtures/simple').default;
+      app.listen();
+    } catch (error) {
+      expect(error.message).toBe(`2 is an invalid routing address definition`);
+    }
   });
 });

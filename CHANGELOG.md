@@ -1,5 +1,14 @@
 # 更新日志 · 测试覆盖率100% [![coverage](https://img.shields.io/codecov/c/github/chumijs/chumi/master.svg)](https://app.codecov.io/gh/chumijs/chumi/tree/master) · 功能稳定保障
 
+## 1.1.11
+
+* 支持通过`loadSerice`和`loadController`
+  
+  可以依次链式加载`controller1`、`service1`、`controller2`、`service2`、`service3`、`controller3` 等等
+
+  实现了任意扩展，让开发者自由搭配，更好了助力bff业务的处理
+
+
 ## 1.1.10
 
 * 支持通过`loadController`，加载其他控制器实例，可以直接调用该控制器上的函数，具体可以查看测试用例代码 `test/fixtures/chain-controllers`

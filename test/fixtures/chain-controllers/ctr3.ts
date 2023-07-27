@@ -26,4 +26,9 @@ export default class Ctr3 {
 
     return { name: (await this.ctr2.indexMore(name)).name + this.ctx.def, c1, c2, c3 };
   }
+
+  @Get('/to3-ctr2-s1-ctr1')
+  async indexCtr2S1Ctr1(@Query('name') name: string) {
+    return await this.ctr2.indexS1Ctr1(name);
+  }
 }
