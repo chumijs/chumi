@@ -16,6 +16,9 @@ export const SymbolService = Symbol('service');
 export const SymbolController = Symbol('controller');
 export const SymbolApiTags = Symbol('controller-api-tags');
 
+export const SymbolServiceUniqueTag = Symbol('serviceUniqueTag');
+export const SymbolControllerUniqueTag = Symbol('controllerUniqueTag');
+
 export type BaseDataType = StringConstructor | NumberConstructor;
 
 export interface parameterMap {
