@@ -8,12 +8,12 @@
 
   实现了任意扩展，让开发者自由搭配，更好了助力bff业务的处理
 
-* 完成了并发测试，保证了`chumi`的健壮性
+* 完成了并发测试，保证了`chumi`的健壮性 [`test/concurrence.test.ts`](test/concurrence.test.ts)
 
 
 ## 1.1.10
 
-* 支持通过`loadController`，加载其他控制器实例，可以直接调用该控制器上的函数，具体可以查看测试用例代码 `test/fixtures/chain-controllers`
+* 支持通过`loadController`，加载其他控制器实例，可以直接调用该控制器上的函数，具体可以查看测试用例代码 [`test/fixtures/chain-controllers`](test/fixtures/chain-controllers)
 
   支持链式调用，即 控制器1 -> 控制器2 -> 控制器3 -> service1 -> service2
 
