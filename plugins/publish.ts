@@ -61,7 +61,8 @@ export default function compressServerCode() {
           },
           repository: 'git@github.com:chumijs/chumi.git',
           author: 'topthinking',
-          license: 'MIT'
+          license: 'MIT',
+          keywords: ['koa', 'middleware', 'runtime framework']
         })
       );
 
