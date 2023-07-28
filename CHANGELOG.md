@@ -2,7 +2,7 @@
 
 ## 1.1.13
 
-* 提供了高级TS泛型处理，获取控制器函数相关类型（函数参数和返回值），具体参考相关前端代码 [`sample/chumi-types/client/apis.ts`](sample/chumi-types/client/apis.ts)
+* 提供了高级TS泛型处理，获取控制器函数相关类型（函数参数和返回值），具体参考相关前端代码 [`sample/chumi-types/client/apis.ts`](sample/chumi-types/client/apis.ts)，这是基于`axios`的接口定义示例
 
 ## 1.1.12
 
