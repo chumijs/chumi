@@ -37,7 +37,9 @@ import chumi, {
   Files,
   ApiTags,
   loadService,
-  loadController
+  loadController,
+  ChumiRequestData,   // TypeScript Types
+  ChumiResponseData,  // TypeScript Types
 } from 'chumi';
 ```
 
