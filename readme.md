@@ -43,7 +43,7 @@ import chumi, {
 
 ## 星链
 
-> 直接拷贝如下体验，也可以克隆当前项目，安装依赖，执行运行`yarn tsx sample/chumi-chain`
+> 拷贝如下代码即可体验。也可以克隆当前项目，安装依赖后，直接使用命令`yarn tsx sample/chumi-chain`运行即可
 
 ```ts
 import Koa, { Context } from 'koa';
