@@ -1,13 +1,5 @@
 import { Context } from 'koa';
-import {
-  ChumiRequestData,
-  ChumiResponseData,
-  Controller,
-  Get,
-  Query,
-  loadController,
-  loadService
-} from '../../../../chumi';
+import { Controller, Get, Query, loadController, loadService } from '../../../../chumi';
 import S1 from '../Services/S1';
 
 // Controller类
@@ -29,7 +21,11 @@ export default class Chain {
    */
   @Get('/a')
   async a(@Query('name') name: string, @Query('id') id: number) {
-    return this.chain.chain.s1.s1.chain.chain.s1.s1.chain.chain.s1.s1.chain.chain.result();
+    return {
+      name,
+      id,
+      path: this.chain.chain.s1.s1.chain.chain.s1.s1.chain.chain.s1.s1.chain.chain.result()
+    };
   }
 
   @Get('/b')
@@ -42,15 +38,6 @@ export default class Chain {
 
   @Get('/c')
   c() {
-    return [{ a: 2 }, { a: 3 }];
+    return [{ a: 2 }, { a: 3, c: '3' }];
   }
 }
-
-type a = ChumiResponseData<typeof Chain, 'a'>;
-type b = ChumiRequestData<typeof Chain, 'a'>;
-
-const m: (...args: b) => void = (name, id) => {
-  console.log(1);
-};
-
-m('1', 2);
