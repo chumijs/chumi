@@ -3,7 +3,10 @@
     "composite": true,
     "module": "CommonJS",
     "target": "es2015",
-    "lib": ["esnext", "dom"],
+    "lib": [
+      "esnext",
+      "dom"
+    ],
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "moduleResolution": "node",
@@ -11,8 +14,19 @@
     "noEmit": false,
     "declaration": true,
     "emitDeclarationOnly": true,
-    "types": ["node", "jest"]
+    "types": [
+      "node",
+      "jest",
+      "vite/client"
+    ],
+    "jsx": "preserve"
   },
-  "files": ["server.d.ts"],
-  "include": ["chumi/**/*.ts", "test/**/*.ts"]
+  "files": [
+    "server.d.ts"
+  ],
+  "include": [
+    "chumi/**/*.ts",
+    "test/**/*.ts",
+    "sample/**/*"
+  ]
 }

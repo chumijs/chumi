@@ -70,6 +70,22 @@ export interface ChumiOptions<T> {
   controllerMiddlewares?: ((ctx: T, next: Next) => Promise<void>)[];
 }
 
+type AsyncReturnType<T extends (...args: any) => Promise<any>> = T extends (
+  ...args: any
+) => Promise<infer R>
+  ? R
+  : T;
+
+export type ChumiResponseData<
+  S extends abstract new (...args: any) => any,
+  T extends keyof InstanceType<S>
+> = AsyncReturnType<InstanceType<S>[T]>;
+
+export type ChumiRequestData<
+  S extends abstract new (...args: any) => any,
+  T extends keyof InstanceType<S>
+> = Parameters<InstanceType<S>[T]>;
+
 /**
  * 基于koa的运行时中间件框架
  *
