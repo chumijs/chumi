@@ -8,6 +8,7 @@ import {
   SymbolServiceName,
   SymbolServiceUniqueTag
 } from './constants';
+import { locate } from 'func-loc';
 
 export default (TargetServiceClass: any): any => {
   const uniqueTag = `##Service_${Math.random()}##`;
@@ -71,7 +72,19 @@ export default (TargetServiceClass: any): any => {
           /**
            * 对其他函数进行重新显式绑定
            */
-          that[actionName] = targetServiceInstance[actionName].bind(that);
+          const action = targetServiceInstance[actionName];
+          that[actionName] = async function (...args: any[]) {
+            try {
+              throw new Error();
+            } catch (error) {
+              console.log(1111, error.stack);
+            }
+            return await action.apply(that, args);
+          };
+
+          // locate(TargetServiceClass.prototype[actionName]).then((res) => {
+          //   console.log(222, res);
+          // });
         }
       });
 
@@ -81,6 +94,10 @@ export default (TargetServiceClass: any): any => {
 
   Service[SymbolServiceName] = SymbolService;
   Service[SymbolServiceUniqueTag] = uniqueTag;
+
+  locate(TargetServiceClass).then((res) => {
+    console.log(9999, res);
+  });
 
   return Service;
 };

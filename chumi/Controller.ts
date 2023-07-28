@@ -22,6 +22,7 @@ import {
   SymbolControllerUniqueTag
 } from './constants';
 import Router from 'koa-router';
+import { locate } from 'func-loc';
 
 const handleParameter = (parameterMap: parameterMap[], ctx: Context) => {
   const parameters = Array.from(Array(parameterMap.length));
@@ -215,6 +216,9 @@ export default (
                 // proxy代理实现，所有实例，梦开始的地方
                 const handler = {
                   get: function (_target, property) {
+                    locate(that[property]).then((res) => {
+                      console.log(111, res);
+                    });
                     // 这里的缓存，是调用开始的地方，这里不能移除，其他地方的实例化就不需要缓存了
                     if (cacheInstances[property]) {
                       return cacheInstances[property];
@@ -225,6 +229,11 @@ export default (
                       // 每次都需要实例化，动态注入当前的ctx
                       const instance = new that[property](ctx, options);
                       cacheInstances[property] = instance;
+                      try {
+                        throw new Error();
+                      } catch (error) {
+                        console.log(9991, error.stack);
+                      }
                       return cacheInstances[property];
                     }
 
@@ -233,6 +242,7 @@ export default (
                       // 但是那个的ctx，就要继承当前传的ctx了，这里相当于把那个控制器当做一个延伸
                       const instance = new that[property][SymbolControllerInstance](ctx, options);
                       cacheInstances[property] = instance;
+                      console.log(that[property]['[[FunctionLocation]]']);
                       return cacheInstances[property];
                     }
 
@@ -320,6 +330,11 @@ export default (
           const action: MethodAction = targetControllerInstance[actionName];
 
           that[actionName] = async function (...args: any[]) {
+            try {
+              throw new Error();
+            } catch (error) {
+              console.log(2222, error.stack);
+            }
             // 当前函数内，多次调用同一个实例，不需要重复实例化
             // const cacheInstances = {};
             return await new Promise<void>(async (resolve, reject) => {
