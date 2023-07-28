@@ -81,6 +81,11 @@ export type ChumiResponseData<
   T extends keyof InstanceType<S>
 > = AsyncReturnType<InstanceType<S>[T]>;
 
+export type ChumiRequestData<
+  S extends abstract new (...args: any) => any,
+  T extends keyof InstanceType<S>
+> = Parameters<InstanceType<S>[T]>;
+
 /**
  * 基于koa的运行时中间件框架
  *

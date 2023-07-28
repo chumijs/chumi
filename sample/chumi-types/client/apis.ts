@@ -1,18 +1,19 @@
-import { ChumiResponseData } from '../../../chumi';
-import Chain from '../server/Controllers/Chain';
-import request, { ApiReturnType } from './request';
+import { ControllersType } from '../server/Controllers';
+import request, { ApiFunction, ApiResponseData } from './request';
 
-export const testA = async () => {
-  return await request.get<ChumiResponseData<typeof Chain, 'a'>>(`/a`);
-};
-export type testAData = ApiReturnType<typeof testA>;
+type ChainType = ControllersType['Chain'];
 
-export const testB = async () => {
-  return await request.get<ChumiResponseData<typeof Chain, 'b'>>(`/b`);
+export const testA: ApiFunction<ChainType, 'a'> = async (name, id) => {
+  return await request.get(`/a?name=${name}&id=${id}`);
 };
-export type testBData = ApiReturnType<typeof testB>;
+export type testAData = ApiResponseData<ChainType, 'a'>;
 
-export const testC = async () => {
-  return await request.get<ChumiResponseData<typeof Chain, 'c'>>(`/b`);
+export const testB: ApiFunction<ChainType, 'b'> = async () => {
+  return await request.get(`/b`);
 };
-export type testCData = ApiReturnType<typeof testC>;
+export type testBData = ApiResponseData<ChainType, 'b'>;
+
+export const testC: ApiFunction<ChainType, 'c'> = async () => {
+  return await request.get(`/b`);
+};
+export type testCData = ApiResponseData<ChainType, 'c'>;

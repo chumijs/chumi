@@ -1,4 +1,5 @@
 import axios, { AxiosInstance, AxiosRequestConfig } from 'axios';
+import { ChumiRequestData, ChumiResponseData } from '../../../chumi';
 
 // 定义通用的 Response 类型
 export interface ApiResponse<T> {
@@ -26,10 +27,20 @@ request.interceptors.response.use((response) => {
   return result;
 });
 
-export type AxiosReturnType<S extends Promise<ApiResponse<any>>> = (S extends Promise<infer T>
+type AxiosReturnType<S extends Promise<ApiResponse<any>>> = (S extends Promise<infer T>
   ? T
   : never)['data'];
 
-export type ApiReturnType<S extends (...args: any) => any> = AxiosReturnType<ReturnType<S>>;
+type ApiReturnType<S extends (...args: any) => any> = AxiosReturnType<ReturnType<S>>;
+
+export type ApiFunction<
+  T extends abstract new (...args: any) => any,
+  S extends keyof InstanceType<T>
+> = (...args: ChumiRequestData<T, S>) => Promise<ApiResponse<ChumiResponseData<T, S>>>;
+
+export type ApiResponseData<
+  T extends abstract new (...args: any) => any,
+  S extends keyof InstanceType<T>
+> = ApiReturnType<ApiFunction<T, S>>;
 
 export default request;
