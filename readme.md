@@ -43,7 +43,7 @@ import chumi, {
 } from 'chumi';
 ```
 
-## 星链
+## 星链互联
 
 > 拷贝如下代码即可体验。也可以克隆当前项目，安装依赖后，直接使用命令`yarn tsx sample/chumi-chain`运行即可
 
@@ -83,4 +83,48 @@ app.use(chumi([Chain]));
 
 app.listen(9000);
 
+```
+
+## 全栈友好
+
+> 1. chumi提供了`ChumiRequestData`和`ChumiResponseData`类型推导泛型函数，可以把控制器函数的入参和返回值类型推断出来
+>
+> 2. 方便在全栈项目中，前后端在接口这一块的入参和出参的数据类型保持一致
+>
+> 3. 具体可以参考完整项目 [`sample/chumi-types`](sample/chumi-types)，克隆当前项目，安装依赖后，执行`yarn vite dev --config sample/chumi-types/client/vite.config.ts`命令即可
+
+```ts
+// 核心示例代码
+import { ChumiRequestData,ChumiResponseData } from 'chumi';
+
+// 接口通用返回格式，我们往往会用到data
+// 这里的data就是对应控制器函数的返回值
+export interface ApiResponse<T> {
+  ret: 0 | -1;
+  msg: string;
+  data: T;
+}
+
+// 对定义API请求的函数的类型定义
+export type ApiFunction<
+  T extends abstract new (...args: any) => any,
+  S extends keyof InstanceType<T>
+> = (...args: ChumiRequestData<T, S>) => Promise<ApiResponse<ChumiResponseData<T, S>>>;
+
+export type ApiResponseData<
+  T extends abstract new (...args: any) => any,
+  S extends keyof InstanceType<T>
+> = (ReturnType<ApiFunction<T, S>> extends Promise<infer U> ? U : never)['data'];
+
+// 使用
+// 比如我有导入的控制器类为Ctr1，其上面有一个函数getName
+// 那么可以在前端定义如下接口函数
+export const getName: ApiFunction<typeof Ctr1, 'getName'> = async (id) => {
+  return await request.get(`/api/getName?id=${id}`);
+};
+
+// 获取Ctr1控制器里面的getName函数的返回值类型
+// 这里返回的数据，将直接提供给前端使用
+// 所以在全栈项目中，通过该类型，保证了前后端数据的一致性，提升健壮性
+export type getNameData = ApiResponseData<typeof Ctr1, 'getName'>;
 ```

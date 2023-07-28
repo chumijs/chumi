@@ -27,12 +27,6 @@ request.interceptors.response.use((response) => {
   return result;
 });
 
-type AxiosReturnType<S extends Promise<ApiResponse<any>>> = (S extends Promise<infer T>
-  ? T
-  : never)['data'];
-
-type ApiReturnType<S extends (...args: any) => any> = AxiosReturnType<ReturnType<S>>;
-
 export type ApiFunction<
   T extends abstract new (...args: any) => any,
   S extends keyof InstanceType<T>
@@ -41,6 +35,6 @@ export type ApiFunction<
 export type ApiResponseData<
   T extends abstract new (...args: any) => any,
   S extends keyof InstanceType<T>
-> = ApiReturnType<ApiFunction<T, S>>;
+> = (ReturnType<ApiFunction<T, S>> extends Promise<infer U> ? U : never)['data'];
 
 export default request;
