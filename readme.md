@@ -91,7 +91,7 @@ app.listen(9000);
 >
 > 2. 方便在全栈项目中，前后端在接口这一块的入参和出参的数据类型保持一致
 >
-> 3. 具体可以参考完整项目 [`sample/chumi-types`](sample/chumi-types)，克隆当前项目，安装依赖后，执行`yarn vite dev --config sample/chumi-types/client/vite.config.ts`命令即可
+> 3. 具体可以参考完整项目 [`sample/chumi-types`](https://github.com/chumijs/chumi/blob/master/sample/chumi-types)，克隆当前项目，安装依赖后，执行`yarn vite dev --config sample/chumi-types/client/vite.config.ts`命令即可
 
 ```ts
 // 核心示例代码
@@ -128,3 +128,15 @@ export const getName: ApiFunction<typeof Ctr1, 'getName'> = async (id) => {
 // 所以在全栈项目中，通过该类型，保证了前后端数据的一致性，提升健壮性
 export type getNameData = ApiResponseData<typeof Ctr1, 'getName'>;
 ```
+
+## 更新日志
+
+点击查看详细的[更新日志](https://github.com/chumijs/chumi/blob/master/CHANGELOG.md)
+
+## License
+
+[MIT](https://github.com/chumijs/chumi/blob/master/LICENSE)
+
+Copyright (c) 2023-present, Topthinking
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fchumijs%2Fchumi.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fchumijs%2Fchumi?ref=badge_large)
